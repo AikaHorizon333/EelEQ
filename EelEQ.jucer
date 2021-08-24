@@ -1,7 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <JUCERPROJECT id="suyb3m" name="EelEQ" projectType="audioplug" useAppConfig="0"
-              addUsingNamespaceToJuceHeader="0" displaySplashScreen="1" jucerFormatVersion="1">
+              addUsingNamespaceToJuceHeader="0" displaySplashScreen="1" jucerFormatVersion="1"
+              pluginManufacturer="Lusikka" pluginManufacturerCode="LSKA" pluginCode="EELQ"
+              pluginVST3Category="EQ" cppLanguageStandard="17" pluginAAXCategory="1"
+              aaxIdentifier="com.Lusikka.EelEQ" bundleIdentifier="com.Lusikka.EelEQ"
+              companyWebsite="https://twitter.com/CrawlingKhaos" companyName="Lusikka">
   <MAINGROUP id="MrPntz" name="EelEQ">
     <GROUP id="{A41C9BC8-B0AA-85E9-1885-DA93456620D9}" name="Source">
       <FILE id="QjgL5w" name="PluginProcessor.cpp" compile="1" resource="0"
