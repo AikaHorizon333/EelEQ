@@ -5,7 +5,8 @@
               pluginManufacturer="Lusikka" pluginManufacturerCode="LSKA" pluginCode="EELQ"
               pluginVST3Category="EQ" cppLanguageStandard="17" pluginAAXCategory="1"
               aaxIdentifier="com.Lusikka.EelEQ" bundleIdentifier="com.Lusikka.EelEQ"
-              companyWebsite="https://twitter.com/CrawlingKhaos" companyName="Lusikka">
+              companyWebsite="https://twitter.com/CrawlingKhaos" companyName="Lusikka"
+              pluginAUMainType="'aufx'" pluginFormats="buildAAX,buildAU,buildStandalone,buildVST3">
   <MAINGROUP id="MrPntz" name="EelEQ">
     <GROUP id="{A41C9BC8-B0AA-85E9-1885-DA93456620D9}" name="Source">
       <FILE id="QjgL5w" name="PluginProcessor.cpp" compile="1" resource="0"
@@ -37,6 +38,7 @@
         <MODULEPATH id="juce_graphics" path="../../JUCE/modules"/>
         <MODULEPATH id="juce_gui_basics" path="../../JUCE/modules"/>
         <MODULEPATH id="juce_gui_extra" path="../../JUCE/modules"/>
+        <MODULEPATH id="juce_dsp" path="../../JUCE/modules"/>
       </MODULEPATHS>
     </XCODE_MAC>
   </EXPORTFORMATS>
@@ -50,6 +52,7 @@
     <MODULE id="juce_audio_utils" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
     <MODULE id="juce_core" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
     <MODULE id="juce_data_structures" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
+    <MODULE id="juce_dsp" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
     <MODULE id="juce_events" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
     <MODULE id="juce_graphics" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
     <MODULE id="juce_gui_basics" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
