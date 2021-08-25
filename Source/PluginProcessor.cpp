@@ -105,6 +105,16 @@ void EelEQAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
     leftChain.prepare(spec);
     rightChain.prepare(spec);
     
+
+    auto chainSettings = getChainSettings(apvts);
+    
+    auto peakCoefficients = juce::dsp::IIR::Coefficients<float>::makePeakFilter(sampleRate,
+                                                                                chainSettings.peakFreq, chainSettings.peakQuality,
+                                                                                juce::Decibels::decibelsToGain(chainSettings.peakGainInDecibels));
+    
+    *leftChain.get<ChainPositions::Peak>().coefficients = *peakCoefficients;
+    *rightChain.get<ChainPositions::Peak>().coefficients = *peakCoefficients;
+    
     
     
     
@@ -164,20 +174,36 @@ void EelEQAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::
     // Alternatively, you can process the samples with the channels
     // interleaved by keeping the same state.
     
+    auto chainSettings = getChainSettings(apvts);
+    
+    auto peakCoefficients = juce::dsp::IIR::Coefficients<float>::makePeakFilter(getSampleRate(),
+                                                                                chainSettings.peakFreq, chainSettings.peakQuality,
+                                                                                juce::Decibels::decibelsToGain(chainSettings.peakGainInDecibels));
+    
+    *leftChain.get<ChainPositions::Peak>().coefficients = *peakCoefficients;
+    *rightChain.get<ChainPositions::Peak>().coefficients = *peakCoefficients;
+
     
     
+    
+    
+    
+    
+    // Definir la instancia del AudioBlock
     juce::dsp::AudioBlock<float> block(buffer);
     
+    // Extraer los canales dentro del AudioBlock
     auto leftBlock = block.getSingleChannelBlock(0);
     auto rightBlock = block.getSingleChannelBlock(1);
     
-    
+    // Crear el ProcessContext
     juce::dsp::ProcessContextReplacing<float> leftContext(leftBlock);
     juce::dsp::ProcessContextReplacing<float> rightContext(rightBlock);
     
-    
+    // Pasar el contexto a las cadenas
     leftChain.process(leftContext);
     rightChain.process(rightContext);
+    
     
     
     
@@ -214,6 +240,34 @@ void EelEQAudioProcessor::setStateInformation (const void* data, int sizeInBytes
 
 
 //==============================================================================
+
+
+ChainSettings getChainSettings (juce::AudioProcessorValueTreeState& apvts){
+    
+    ChainSettings settings;
+    
+    
+    //HPF y LPF
+    settings.lowCutFreq = apvts.getRawParameterValue("LowCut Freq")->load();
+    settings.highCutFreq = apvts.getRawParameterValue("HighCut Freq")->load();
+    settings.lowCutSlope = apvts.getRawParameterValue("LowCut Slope")->load();
+    settings.highCutSlope = apvts.getRawParameterValue("HighCut Slope")->load();
+    
+    
+    //Bell
+    settings.peakFreq = apvts.getRawParameterValue("Peak Freq")->load();
+    settings.peakGainInDecibels = apvts.getRawParameterValue("Peak Gain")->load();
+    settings.peakQuality = apvts.getRawParameterValue("Quality")->load();
+    
+    return settings;
+}
+
+
+
+
+
+
+
 juce::AudioProcessorValueTreeState::ParameterLayout EelEQAudioProcessor::createParameterLayout() {
     
     juce::AudioProcessorValueTreeState::ParameterLayout layout;
@@ -223,7 +277,7 @@ juce::AudioProcessorValueTreeState::ParameterLayout EelEQAudioProcessor::createP
     layout.add(
                std::make_unique<juce::AudioParameterFloat>("LowCut Freq",
                                                            "LowCut Freq",
-                                                           juce::NormalisableRange<float>(20.f,20000.f,1.f,1.f),
+                                                           juce::NormalisableRange<float>(20.f,20000.f,1.f,0.25f),
                                                            20.f
                                                            )
                );
@@ -231,7 +285,7 @@ juce::AudioProcessorValueTreeState::ParameterLayout EelEQAudioProcessor::createP
     layout.add(
                std::make_unique<juce::AudioParameterFloat>("HighCut Freq",
                                                            "HighCut Freq",
-                                                           juce::NormalisableRange<float>(20.f, 20000.f, 1.f, 1.f),
+                                                           juce::NormalisableRange<float>(20.f, 20000.f, 1.f, 0.25f),
                                                            20000.f
                                                            )
                );
@@ -239,7 +293,7 @@ juce::AudioProcessorValueTreeState::ParameterLayout EelEQAudioProcessor::createP
     layout.add(
                std::make_unique<juce::AudioParameterFloat>("Peak Freq",
                                                            "Peak Freq",
-                                                           juce::NormalisableRange<float>(20.f,20000.f,1.f,1.f),
+                                                           juce::NormalisableRange<float>(20.f,20000.f,1.f,0.25f),
                                                            1000.f
                                                            )
                );
@@ -289,6 +343,10 @@ juce::AudioProcessorValueTreeState::ParameterLayout EelEQAudioProcessor::createP
     
     return layout;
 }
+
+
+
+
 
 
 
