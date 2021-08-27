@@ -115,10 +115,13 @@ private:
     template<int Index,typename ChainType, typename CoefficientType>
     void updateSlopes(ChainType& chain, CoefficientType& cutCoeffients)
         {
+           
+            // Actualizar los coeficientes, desactivar el bypass de la cadena.
             *chain.template get<Index>().coefficients = *cutCoeffients[Index];
             chain.template setBypassed<Index>(false);
             
         }
+    
     
     template<typename ChainType, typename CoefficientType>
     void UpdateCutFilter(ChainType &chain,
@@ -127,8 +130,7 @@ private:
     
     {
         
-        //HighPass Filter Left Channel
-        
+        //Filter Channel
         
         chain.template setBypassed<0>(true);
         chain.template setBypassed<1>(true);
@@ -136,8 +138,6 @@ private:
         chain.template setBypassed<3>(true);
         
         
-        
-//        switch (chainSettings.lowCutSlope)
         switch (slope)
         {
             
@@ -161,54 +161,15 @@ private:
                 updateSlopes<0>(chain, cutCoefficients);
             }
                 
-                
-                
-                
-//            case Slope_12:
-//
-//            {
-//                *leftLowCut.template get<0>().coefficients = *cutCoefficients[0];
-//                leftLowCut.template setBypassed<0>(false);
-//                    break;
-//            }
-//
-//            case Slope_24:
-//            {
-//                *leftLowCut.template get<0>().coefficients = *cutCoefficients[0];
-//                *leftLowCut.template get<1>().coefficients = *cutCoefficients[1];
-//                leftLowCut.template setBypassed<0>(false);
-//                leftLowCut.template setBypassed<1>(false);
-//                    break;
-//            }
-//
-//            case Slope_36:
-//            {
-//
-//                *leftLowCut.template get<0>().coefficients = *cutCoefficients[0];
-//                *leftLowCut.template get<1>().coefficients = *cutCoefficients[1];
-//                *leftLowCut.template get<2>().coefficients = *cutCoefficients[2];
-//                leftLowCut.template setBypassed<0>(false);
-//                leftLowCut.template setBypassed<1>(false);
-//                leftLowCut.template setBypassed<2>(false);
-//                    break;
-//            }
-//
-//            case Slope_48:
-//            {
-//                *leftLowCut.template get<0>().coefficients = *cutCoefficients[0];
-//                *leftLowCut.template get<1>().coefficients = *cutCoefficients[1];
-//                *leftLowCut.template get<2>().coefficients = *cutCoefficients[2];
-//                *leftLowCut.template get<3>().coefficients = *cutCoefficients[3];
-//                leftLowCut.template setBypassed<0>(false);
-//                leftLowCut.template setBypassed<1>(false);
-//                leftLowCut.template setBypassed<2>(false);
-//                leftLowCut.template setBypassed<3>(false);
-//                    break;
-//            }
         }
         
         
     }
+    
+    void UpdateLowCut(const ChainSettings& chainSettings);
+    void UpdateHighCut(const ChainSettings& chainSettings);
+    
+    void UpdateFilters();
     
     
     
