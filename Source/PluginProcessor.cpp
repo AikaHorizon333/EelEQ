@@ -105,40 +105,7 @@ void EelEQAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
     leftChain.prepare(spec);
     rightChain.prepare(spec);
     
-
-//    auto chainSettings = getChainSettings(apvts);
-//
-//
-//    UpdatePeakFilter(chainSettings);
-//
-//    //HighPass Filter: Left Channel
-//
-//    auto lowcutCoefficients = juce::dsp::FilterDesign<float>::designIIRHighpassHighOrderButterworthMethod(chainSettings.lowCutFreq, sampleRate, 2*(chainSettings.lowCutSlope + 1));
-//
-//    auto& leftLowCut = leftChain.get<ChainPositions::LowCut>();
-//    UpdateCutFilter(leftLowCut, lowcutCoefficients, chainSettings.lowCutSlope);
-//
-//    //HPF: Right Channel
-//    auto& rightLowCut = rightChain.get<ChainPositions::LowCut>();
-//    UpdateCutFilter(rightLowCut, lowcutCoefficients, chainSettings.lowCutSlope);
-//
-//
-//
-//    // LowPass Filter: Left Channel
-//
-//    auto highcutCoefficients = juce::dsp::FilterDesign<float>::designIIRLowpassHighOrderButterworthMethod(chainSettings.highCutFreq, sampleRate, 2*(chainSettings.highCutSlope +1));
-//
-//    auto& leftHighCut = leftChain.get<ChainPositions::HighCut>();
-//    UpdateCutFilter(leftHighCut, highcutCoefficients, chainSettings.highCutSlope);
-//
-//    // LPF: Right Channel
-//    auto& rightHighCut = rightChain.get<ChainPositions::HighCut>();
-//    UpdateCutFilter(rightHighCut, highcutCoefficients, chainSettings.highCutSlope);
-//
     UpdateFilters();
-    
-    
-    
     
     
 }
@@ -198,43 +165,6 @@ void EelEQAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::
     // interleaved by keeping the same state.
     
     
-    // Update Coefficients...
-    
-//    auto chainSettings = getChainSettings(apvts);
-//
-//    // Update PeakFilter
-//    UpdatePeakFilter(chainSettings);
-//
-//
-//
-//    //HighPass Filter: Left Channel
-//
-//    auto cutCoefficients = juce::dsp::FilterDesign<float>::designIIRHighpassHighOrderButterworthMethod(chainSettings.lowCutFreq, getSampleRate(), 2*(chainSettings.lowCutSlope + 1));
-//
-//    auto& leftLowCut = leftChain.get<ChainPositions::LowCut>();
-//
-//    UpdateCutFilter(leftLowCut, cutCoefficients, chainSettings.lowCutSlope);
-//
-//
-//    // HPF: Right Channel
-//
-//    auto& rightLowCut = rightChain.get<ChainPositions::LowCut>();
-//    UpdateCutFilter(rightLowCut, cutCoefficients, chainSettings.lowCutSlope);
-//
-//
-//
-//    // LowPass Filter: Left Channel
-//
-//    auto highcutCoefficients = juce::dsp::FilterDesign<float>::designIIRLowpassHighOrderButterworthMethod(chainSettings.highCutFreq, getSampleRate(), 2*(chainSettings.highCutSlope +1));
-//
-//    auto& leftHighCut = leftChain.get<ChainPositions::HighCut>();
-//    UpdateCutFilter(leftHighCut, highcutCoefficients, chainSettings.highCutSlope);
-//
-//    // LPF: Right Channel
-//    auto& rightHighCut = rightChain.get<ChainPositions::HighCut>();
-//    UpdateCutFilter(rightHighCut, highcutCoefficients, chainSettings.highCutSlope);
-//
-    
     UpdateFilters();
     
     // Definir la instancia del AudioBlock
@@ -276,12 +206,29 @@ void EelEQAudioProcessor::getStateInformation (juce::MemoryBlock& destData)
     // You should use this method to store your parameters in the memory block.
     // You could do that either as raw data, or use the XML or ValueTree classes
     // as intermediaries to make it easy to save and load complex data.
+    
+    // Guardar los parametros del bloque de datos...
+    
+    juce::MemoryOutputStream mos(destData, true);
+    apvts.state.writeToStream(mos);
+    
+    
 }
 
 void EelEQAudioProcessor::setStateInformation (const void* data, int sizeInBytes)
 {
     // You should use this method to restore your parameters from this memory block,
     // whose contents will have been created by the getStateInformation() call.
+    
+    auto tree = juce::ValueTree::readFromData(data, sizeInBytes);
+    
+    if(tree.isValid()){
+        
+        apvts.replaceState(tree);
+        UpdateFilters();
+        
+    }
+    
 }
 
 
@@ -320,8 +267,7 @@ void EelEQAudioProcessor::UpdatePeakFilter(const ChainSettings &chainSettings){
     
     UpdateCoefficients(leftChain.get<ChainPositions::Peak>().coefficients, peakCoefficients);
     UpdateCoefficients(rightChain.get<ChainPositions::Peak>().coefficients, peakCoefficients);
-    //*leftChain.get<ChainPositions::Peak>().coefficients = *peakCoefficients;
-    //*rightChain.get<ChainPositions::Peak>().coefficients = *peakCoefficients;
+   
     
 }
 
