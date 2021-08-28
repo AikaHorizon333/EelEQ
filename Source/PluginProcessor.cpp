@@ -196,8 +196,8 @@ bool EelEQAudioProcessor::hasEditor() const
 
 juce::AudioProcessorEditor* EelEQAudioProcessor::createEditor()
 {
-    //return new EelEQAudioProcessorEditor (*this);
-    return new juce::GenericAudioProcessorEditor(*this);
+    return new EelEQAudioProcessorEditor (*this);
+    //return new juce::GenericAudioProcessorEditor(*this);
 }
 
 //==============================================================================
@@ -319,9 +319,6 @@ void EelEQAudioProcessor::UpdateFilters(){
     
     
 }
-
-
-
 
 
 

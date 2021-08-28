@@ -12,6 +12,23 @@
 #include "PluginProcessor.h"
 
 //==============================================================================
+
+
+struct CustomRotatorySlider: juce::Slider {
+    
+    CustomRotatorySlider(): juce::Slider (juce::Slider::SliderStyle::RotaryHorizontalVerticalDrag,
+                                          juce::Slider::TextEntryBoxPosition::NoTextBox){
+        
+        
+    }
+        
+};
+
+
+
+
+
+//==============================================================================
 /**
 */
 class EelEQAudioProcessorEditor  : public juce::AudioProcessorEditor
@@ -28,6 +45,15 @@ private:
     // This reference is provided as a quick way for your editor to
     // access the processor object that created it.
     EelEQAudioProcessor& audioProcessor;
+    
+    // Declarar los sliders
+    CustomRotatorySlider peakFreqSlider, peakGainSlider, peakQualitySlider,
+    lowcutFreqSlider, highcutFreqSlider,
+    lowcutSlopeSlider, highcutSlopeSlider;
+    
+    // Funcion Auxiliar para modificar los sliders
+    
+    std::vector<juce::Component*> getComp();
 
-    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (EelEQAudioProcessorEditor)
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (EelEQAudioProcessorEditor);
 };
