@@ -66,6 +66,9 @@ private:
     lowcutSlopeSliderAttachment, highcutSlopeSliderAttachment;
     
     
+    MonoChain monoChain();
+    
+    
     
     
     
