@@ -54,6 +54,21 @@ private:
     // Funcion Auxiliar para modificar los sliders
     
     std::vector<juce::Component*> getComp();
+    
+    // Namespace para obtener los parametros
+    
+    using APVTS = juce::AudioProcessorValueTreeState;
+    using Attachment = APVTS::SliderAttachment;
+    
+    
+    Attachment peakFreqSliderAttachment, peakGainSliderAttachment, peakQualitySliderAttachment,
+    lowcutFreqSliderAttachment, highcutFreqSliderAttachment,
+    lowcutSlopeSliderAttachment, highcutSlopeSliderAttachment;
+    
+    
+    
+    
+    
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (EelEQAudioProcessorEditor);
 };

@@ -11,11 +11,18 @@
 
 //==============================================================================
 EelEQAudioProcessorEditor::EelEQAudioProcessorEditor (EelEQAudioProcessor& p)
-    : AudioProcessorEditor (&p), audioProcessor (p)
+    : AudioProcessorEditor (&p), audioProcessor (p),
+    peakFreqSliderAttachment(audioProcessor.apvts, "Peak Freq", peakFreqSlider),
+    peakGainSliderAttachment(audioProcessor.apvts, "Peak Gain", peakGainSlider),
+    peakQualitySliderAttachment(audioProcessor.apvts, "Quality", peakQualitySlider),
+    lowcutFreqSliderAttachment(audioProcessor.apvts, "LowCut Freq", lowcutFreqSlider),
+    highcutFreqSliderAttachment(audioProcessor.apvts, "HighCut Freq",  highcutFreqSlider),
+    lowcutSlopeSliderAttachment(audioProcessor.apvts, "LowCut Slope", lowcutSlopeSlider),
+    highcutSlopeSliderAttachment(audioProcessor.apvts, "HighCut Slope", highcutSlopeSlider)
+
 {
     // Make sure that before the constructor has finished, you've set the
     // editor's size to whatever you need it to be.
-    
     
     for(auto* comp : getComp())
     {
@@ -23,8 +30,6 @@ EelEQAudioProcessorEditor::EelEQAudioProcessorEditor (EelEQAudioProcessor& p)
         addAndMakeVisible(comp);
         
     }
-    
-    
     
     setSize (600, 400);
 }
@@ -66,13 +71,7 @@ void EelEQAudioProcessorEditor::resized()
     peakGainSlider.setBounds(bounds.removeFromTop(bounds.getHeight()*0.5));
     peakQualitySlider.setBounds(bounds);
     
-    
-    
-    
-    
-    
 }
-
 
 std::vector<juce::Component*> EelEQAudioProcessorEditor::getComp(){
     
