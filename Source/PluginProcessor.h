@@ -103,8 +103,10 @@ void UpdateCutFilter(ChainType &chain,
             
     }
     
-    
 }
+
+
+
 
 inline auto makeLowCutFilter(const ChainSettings& chainSettings, double sampleRate){
     
@@ -119,19 +121,6 @@ inline auto makeHighCutFilter (const ChainSettings& chainSettings, double sample
     return juce::dsp::FilterDesign<float>::designIIRLowpassHighOrderButterworthMethod(chainSettings.highCutFreq, sampleRate, 2*(chainSettings.highCutSlope +1));
     
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -197,6 +186,72 @@ private:
     
     // Declaramos una función auxiliar. 
     void UpdatePeakFilter(const ChainSettings& chainSettings);
+    
+    
+    
+    /*
+    template<int Index,typename ChainType, typename CoefficientType>
+    void updateSlopes(ChainType& chain, CoefficientType& cutCoeffients)
+        {
+           
+            // Actualizar los coeficientes, desactivar el bypass de la cadena.
+            *chain.template get<Index>().coefficients = *cutCoeffients[Index];
+            chain.template setBypassed<Index>(false);
+            
+        }
+
+
+    template<typename ChainType, typename CoefficientType>
+    void UpdateCutFilter(ChainType &chain,
+                         const CoefficientType& cutCoefficients,
+                         const Slope& slope)
+
+    {
+        
+        //Filter Channel
+        
+        chain.template setBypassed<0>(true);
+        chain.template setBypassed<1>(true);
+        chain.template setBypassed<2>(true);
+        chain.template setBypassed<3>(true);
+        
+        
+        switch (slope)
+        {
+            
+            case Slope_48:
+            {
+                updateSlopes<3>(chain, cutCoefficients);
+            }
+            
+            case Slope_36:
+            {
+                updateSlopes<2>(chain, cutCoefficients);
+            }
+                
+            case Slope_24:
+            {
+                updateSlopes<1>(chain, cutCoefficients);
+            }
+                
+            case Slope_12:
+            {
+                updateSlopes<0>(chain, cutCoefficients);
+            }
+                
+        }
+        
+        
+    }
+
+
+
+
+*/
+
+
+
+    
     
     void UpdateLowCut(const ChainSettings& chainSettings);
     void UpdateHighCut(const ChainSettings& chainSettings);
