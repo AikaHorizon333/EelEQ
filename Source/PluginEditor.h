@@ -31,7 +31,9 @@ struct CustomRotatorySlider: juce::Slider {
 //==============================================================================
 /**
 */
-class EelEQAudioProcessorEditor  : public juce::AudioProcessorEditor
+class EelEQAudioProcessorEditor  : public juce::AudioProcessorEditor,
+juce::AudioProcessorParameter::Listener,
+juce::Timer
 {
 public:
     EelEQAudioProcessorEditor (EelEQAudioProcessor&);
@@ -40,11 +42,22 @@ public:
     //==============================================================================
     void paint (juce::Graphics&) override;
     void resized() override;
+    
+    
+    // Listener and Timer
+    void parameterValueChanged (int parameterIndex, float newValue) override;
+    void parameterGestureChanged (int parameterIndex, bool gestureIsStarting) override{ };
+    void timerCallback() override;
+    
+    
+    
+    
 
 private:
     // This reference is provided as a quick way for your editor to
     // access the processor object that created it.
     EelEQAudioProcessor& audioProcessor;
+    juce::Atomic<bool> parametersChanged {false};
     
     // Declarar los sliders
     CustomRotatorySlider peakFreqSlider, peakGainSlider, peakQualitySlider,
@@ -66,7 +79,7 @@ private:
     lowcutSlopeSliderAttachment, highcutSlopeSliderAttachment;
     
     
-    MonoChain monoChain();
+    MonoChain monoChain;
     
     
     

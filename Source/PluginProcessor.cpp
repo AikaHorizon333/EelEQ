@@ -255,16 +255,24 @@ ChainSettings getChainSettings (juce::AudioProcessorValueTreeState& apvts){
     return settings;
 }
 
+Coefficients makesPeakFilter(const ChainSettings& chainSettings, double sampleRate){
+    
+     return juce::dsp::IIR::Coefficients<float>::makePeakFilter(sampleRate,
+                                                                chainSettings.peakFreq, chainSettings.peakQuality,
+                                                                juce::Decibels::decibelsToGain(chainSettings.peakGainInDecibels));
+    
+}
+
 
 
 //Definimos la función auxiliar que nos ayudara a actualizar los parametros del peak filter...
 void EelEQAudioProcessor::UpdatePeakFilter(const ChainSettings &chainSettings){
     
-    auto peakCoefficients = juce::dsp::IIR::Coefficients<float>::makePeakFilter(getSampleRate(),
+   /* auto peakCoefficients = juce::dsp::IIR::Coefficients<float>::makePeakFilter(getSampleRate(),
                                                                                 chainSettings.peakFreq, chainSettings.peakQuality,
-                                                                                juce::Decibels::decibelsToGain(chainSettings.peakGainInDecibels));
+                                                                                juce::Decibels::decibelsToGain(chainSettings.peakGainInDecibels)); */
     
-    
+    auto peakCoefficients = makesPeakFilter(chainSettings, getSampleRate());
     UpdateCoefficients(leftChain.get<ChainPositions::Peak>().coefficients, peakCoefficients);
     UpdateCoefficients(rightChain.get<ChainPositions::Peak>().coefficients, peakCoefficients);
    
@@ -272,7 +280,7 @@ void EelEQAudioProcessor::UpdatePeakFilter(const ChainSettings &chainSettings){
 }
 
 
-void EelEQAudioProcessor::UpdateCoefficients(Coefficients& old, const Coefficients &replacements){
+void UpdateCoefficients(Coefficients& old, const Coefficients &replacements){
     
     *old = *replacements;
     
