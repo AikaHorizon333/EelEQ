@@ -211,6 +211,9 @@ void EelEQAudioProcessorEditor::timerCallback(){
         auto lowcutCoefficients = makeLowCutFilter(chainSettings, audioProcessor.getSampleRate());
         auto highcutCoefficients = makeHighCutFilter(chainSettings, audioProcessor.getSampleRate());
         
+        UpdateCutFilter(monoChain.get<ChainPositions::LowCut>(), lowcutCoefficients, chainSettings.lowCutSlope);
+        UpdateCutFilter(monoChain.get<ChainPositions::HighCut>(), highcutCoefficients, chainSettings.highCutSlope);
+        
      
         // Redibujar la curva
         repaint();
