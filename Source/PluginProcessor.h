@@ -49,7 +49,7 @@ enum ChainPositions {
 using Coefficients = Filter::CoefficientsPtr;
 void UpdateCoefficients (Coefficients& old, const Coefficients& replacements);
 
-Coefficients makesPeakFilter();
+Coefficients makePeakFilter(const ChainSettings& chainSettings, double sampleRate);
 
 
 //==============================================================================

@@ -20,6 +20,9 @@ EelEQAudioProcessorEditor::EelEQAudioProcessorEditor (EelEQAudioProcessor& p)
     lowcutSlopeSliderAttachment(audioProcessor.apvts, "LowCut Slope", lowcutSlopeSlider),
     highcutSlopeSliderAttachment(audioProcessor.apvts, "HighCut Slope", highcutSlopeSlider)
 
+
+
+
 {
     // Make sure that before the constructor has finished, you've set the
     // editor's size to whatever you need it to be.
@@ -31,11 +34,28 @@ EelEQAudioProcessorEditor::EelEQAudioProcessorEditor (EelEQAudioProcessor& p)
         
     }
     
+    // Add listeer
+    
+    const auto& params = audioProcessor.getParameters();
+    for(auto param: params){
+        param->addListener(this);
+    }
+    
+    // start the timer (very importante)
+    startTimerHz(60);
+    
     setSize (600, 400);
 }
 
 EelEQAudioProcessorEditor::~EelEQAudioProcessorEditor()
 {
+    
+    //Remove listener on exit...
+    const auto& params = audioProcessor.getParameters();
+    for(auto param: params){
+        param->removeListener(this);
+    }
+    
 }
 
 //==============================================================================
@@ -181,7 +201,15 @@ void EelEQAudioProcessorEditor::timerCallback(){
     if(parametersChanged.compareAndSetBool(false, true))
     {
         // Actualizar el monoChain
+        
+        DBG("Params Change");
+        
+        auto chainSettings = getChainSettings(audioProcessor.apvts);
+        auto peakCoefficients = makePeakFilter(chainSettings, audioProcessor.getSampleRate());
+        UpdateCoefficients(monoChain.get<ChainPositions::Peak>().coefficients,peakCoefficients);
+        
         // Redibujar la curva
+        repaint();
         
         
     }

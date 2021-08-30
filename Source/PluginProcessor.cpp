@@ -255,7 +255,7 @@ ChainSettings getChainSettings (juce::AudioProcessorValueTreeState& apvts){
     return settings;
 }
 
-Coefficients makesPeakFilter(const ChainSettings& chainSettings, double sampleRate){
+Coefficients makePeakFilter(const ChainSettings& chainSettings, double sampleRate){
     
      return juce::dsp::IIR::Coefficients<float>::makePeakFilter(sampleRate,
                                                                 chainSettings.peakFreq, chainSettings.peakQuality,
@@ -272,7 +272,7 @@ void EelEQAudioProcessor::UpdatePeakFilter(const ChainSettings &chainSettings){
                                                                                 chainSettings.peakFreq, chainSettings.peakQuality,
                                                                                 juce::Decibels::decibelsToGain(chainSettings.peakGainInDecibels)); */
     
-    auto peakCoefficients = makesPeakFilter(chainSettings, getSampleRate());
+    auto peakCoefficients = makePeakFilter(chainSettings, getSampleRate());
     UpdateCoefficients(leftChain.get<ChainPositions::Peak>().coefficients, peakCoefficients);
     UpdateCoefficients(rightChain.get<ChainPositions::Peak>().coefficients, peakCoefficients);
    
