@@ -185,6 +185,13 @@ void ResponseCurveComponent::timerCallback(){
 //==============================================================================
 EelEQAudioProcessorEditor::EelEQAudioProcessorEditor(EelEQAudioProcessor& p)
     : AudioProcessorEditor (&p), audioProcessor (p),
+    peakFreqSlider(*audioProcessor.apvts.getParameter("Peak Freq"), "Hz"),
+    peakGainSlider(*audioProcessor.apvts.getParameter("Peak Gain"), "dB"),
+    peakQualitySlider(*audioProcessor.apvts.getParameter("Quality"), "Q"),
+    lowcutFreqSlider(*audioProcessor.apvts.getParameter("LowCut Freq"), "Hz"),
+    highcutFreqSlider(*audioProcessor.apvts.getParameter("HighCut Freq"), "Hz"),
+    lowcutSlopeSlider(*audioProcessor.apvts.getParameter("LowCut Slope"), "dB/Oct"),
+    highcutSlopeSlider(*audioProcessor.apvts.getParameter("HighCut Slope"), "dB/Oct"),
     responseCurveComponent(audioProcessor),
     peakFreqSliderAttachment(audioProcessor.apvts, "Peak Freq", peakFreqSlider),
     peakGainSliderAttachment(audioProcessor.apvts, "Peak Gain", peakGainSlider),
