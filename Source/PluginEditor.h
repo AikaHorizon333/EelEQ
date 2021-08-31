@@ -22,9 +22,7 @@ struct LookAndFeel: juce::LookAndFeel_V4{
                                    float sliderPosProportional,
                                    float rotaryStartAngle,
                                    float rotaryEndAngle,
-                           juce::Slider&) override{
-        
-    }
+                           juce::Slider&) override;
    
 };
 
@@ -55,7 +53,7 @@ struct RotarySliderWithLabels: juce::Slider {
     
     
     //Metodo de paint
-    void paint(juce::Graphics &g)override{}
+    void paint(juce::Graphics &g)override;
     
     //TextBox
     juce::Rectangle<int> getSliderBounds() const;
@@ -66,6 +64,7 @@ struct RotarySliderWithLabels: juce::Slider {
     
     
 };
+
 
 //==============================================================================
 
