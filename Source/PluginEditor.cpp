@@ -10,29 +10,9 @@
 #include "PluginEditor.h"
 
 //==============================================================================
-EelEQAudioProcessorEditor::EelEQAudioProcessorEditor (EelEQAudioProcessor& p)
-    : AudioProcessorEditor (&p), audioProcessor (p),
-    peakFreqSliderAttachment(audioProcessor.apvts, "Peak Freq", peakFreqSlider),
-    peakGainSliderAttachment(audioProcessor.apvts, "Peak Gain", peakGainSlider),
-    peakQualitySliderAttachment(audioProcessor.apvts, "Quality", peakQualitySlider),
-    lowcutFreqSliderAttachment(audioProcessor.apvts, "LowCut Freq", lowcutFreqSlider),
-    highcutFreqSliderAttachment(audioProcessor.apvts, "HighCut Freq",  highcutFreqSlider),
-    lowcutSlopeSliderAttachment(audioProcessor.apvts, "LowCut Slope", lowcutSlopeSlider),
-    highcutSlopeSliderAttachment(audioProcessor.apvts, "HighCut Slope", highcutSlopeSlider)
+//ResponseCurveComponent
 
-
-
-
-{
-    // Make sure that before the constructor has finished, you've set the
-    // editor's size to whatever you need it to be.
-    
-    for(auto* comp : getComp())
-    {
-        
-        addAndMakeVisible(comp);
-        
-    }
+ResponseCurveComponent::ResponseCurveComponent(EelEQAudioProcessor& p): audioProcessor(p){
     
     // Add listeer
     
@@ -44,10 +24,9 @@ EelEQAudioProcessorEditor::EelEQAudioProcessorEditor (EelEQAudioProcessor& p)
     // start the timer (very importante)
     startTimerHz(60);
     
-    setSize (600, 400);
 }
 
-EelEQAudioProcessorEditor::~EelEQAudioProcessorEditor()
+ResponseCurveComponent::~ResponseCurveComponent()
 {
     
     //Remove listener on exit...
@@ -58,8 +37,7 @@ EelEQAudioProcessorEditor::~EelEQAudioProcessorEditor()
     
 }
 
-//==============================================================================
-void EelEQAudioProcessorEditor::paint (juce::Graphics& g)
+void ResponseCurveComponent::paint (juce::Graphics& g)
 {
     
     using namespace juce;
@@ -69,8 +47,8 @@ void EelEQAudioProcessorEditor::paint (juce::Graphics& g)
     //Drawing the response curve...
     
     //We need to get the bounds and the width of the response area.
-    auto bounds = getLocalBounds();
-    auto responseArea = bounds.removeFromTop(bounds.getHeight()*0.33); // esto regresa la zona que le corresponde la la curva.
+    
+    auto responseArea = getLocalBounds();
     
     auto w = responseArea.getWidth();
     
@@ -156,46 +134,26 @@ void EelEQAudioProcessorEditor::paint (juce::Graphics& g)
     g.strokePath(responseCurve, PathStrokeType(2.f));
     
     
-    
-    
-    
-    
-    
-    
 }
 
-void EelEQAudioProcessorEditor::resized()
-{
-    // This is generally where you'll want to lay out the positions of any
-    // subcomponents in your editor..
-    
-    auto bounds = getLocalBounds();
-    auto responseArea = bounds.removeFromTop(bounds.getHeight()*0.33);
-    
-    auto lowCutArea = bounds.removeFromLeft(bounds.getWidth()*0.33);
-    auto highCutArea = bounds.removeFromRight(bounds.getWidth()*0.5);
-    
-    lowcutFreqSlider.setBounds(lowCutArea.removeFromTop(lowCutArea.getHeight()*0.5));
-    lowcutSlopeSlider.setBounds(lowCutArea);
-    
-    highcutFreqSlider.setBounds(highCutArea.removeFromTop(highCutArea.getHeight()*0.5));
-    highcutSlopeSlider.setBounds(highCutArea);
-    
-    
-    peakFreqSlider.setBounds(bounds.removeFromTop(bounds.getHeight()*0.33));
-    peakGainSlider.setBounds(bounds.removeFromTop(bounds.getHeight()*0.5));
-    peakQualitySlider.setBounds(bounds);
-    
-}
 
-void EelEQAudioProcessorEditor::parameterValueChanged(int parameterIndex, float newValue){
+
+
+
+
+
+
+
+
+
+void ResponseCurveComponent::parameterValueChanged(int parameterIndex, float newValue){
     
     // Set the atomic flag
     parametersChanged.set(true);
     
 }
 
-void EelEQAudioProcessorEditor::timerCallback(){
+void ResponseCurveComponent::timerCallback(){
     
     // Solo va a actualizar si se realizó algun cambio en el parametro
     if(parametersChanged.compareAndSetBool(false, true))
@@ -220,9 +178,81 @@ void EelEQAudioProcessorEditor::timerCallback(){
         
         
     }
+
+}
+
+
+//==============================================================================
+EelEQAudioProcessorEditor::EelEQAudioProcessorEditor(EelEQAudioProcessor& p)
+    : AudioProcessorEditor (&p), audioProcessor (p),
+    responseCurveComponent(audioProcessor),
+    peakFreqSliderAttachment(audioProcessor.apvts, "Peak Freq", peakFreqSlider),
+    peakGainSliderAttachment(audioProcessor.apvts, "Peak Gain", peakGainSlider),
+    peakQualitySliderAttachment(audioProcessor.apvts, "Quality", peakQualitySlider),
+    lowcutFreqSliderAttachment(audioProcessor.apvts, "LowCut Freq", lowcutFreqSlider),
+    highcutFreqSliderAttachment(audioProcessor.apvts, "HighCut Freq",  highcutFreqSlider),
+    lowcutSlopeSliderAttachment(audioProcessor.apvts, "LowCut Slope", lowcutSlopeSlider),
+    highcutSlopeSliderAttachment(audioProcessor.apvts, "HighCut Slope", highcutSlopeSlider)
+
+
+
+
+{
+    // Make sure that before the constructor has finished, you've set the
+    // editor's size to whatever you need it to be.
     
+    for(auto* comp : getComp())
+    {
+        
+        addAndMakeVisible(comp);
+        
+    }
+    
+    setSize (600, 400);
+}
+
+EelEQAudioProcessorEditor::~EelEQAudioProcessorEditor()
+{
+
     
 }
+
+//==============================================================================
+void EelEQAudioProcessorEditor::paint (juce::Graphics& g)
+{
+    
+    using namespace juce;
+    // (Our component is opaque, so we must completely fill the background with a solid colour)
+    g.fillAll (Colours::black);
+
+    
+}
+
+void EelEQAudioProcessorEditor::resized()
+{
+    // This is generally where you'll want to lay out the positions of any
+    // subcomponents in your editor..
+    
+    auto bounds = getLocalBounds();
+    auto responseArea = bounds.removeFromTop(bounds.getHeight()*0.33);
+    responseCurveComponent.setBounds(responseArea);
+    
+    auto lowCutArea = bounds.removeFromLeft(bounds.getWidth()*0.33);
+    auto highCutArea = bounds.removeFromRight(bounds.getWidth()*0.5);
+    
+    lowcutFreqSlider.setBounds(lowCutArea.removeFromTop(lowCutArea.getHeight()*0.5));
+    lowcutSlopeSlider.setBounds(lowCutArea);
+    
+    highcutFreqSlider.setBounds(highCutArea.removeFromTop(highCutArea.getHeight()*0.5));
+    highcutSlopeSlider.setBounds(highCutArea);
+    
+    
+    peakFreqSlider.setBounds(bounds.removeFromTop(bounds.getHeight()*0.33));
+    peakGainSlider.setBounds(bounds.removeFromTop(bounds.getHeight()*0.5));
+    peakQualitySlider.setBounds(bounds);
+    
+}
+
 
 
 std::vector<juce::Component*> EelEQAudioProcessorEditor::getComp(){
@@ -235,7 +265,8 @@ std::vector<juce::Component*> EelEQAudioProcessorEditor::getComp(){
         &lowcutFreqSlider,
         &highcutFreqSlider,
         &lowcutSlopeSlider,
-        &highcutSlopeSlider
+        &highcutSlopeSlider,
+        &responseCurveComponent
         
         
     };

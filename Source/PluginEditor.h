@@ -24,6 +24,43 @@ struct CustomRotatorySlider: juce::Slider {
         
 };
 
+//==============================================================================
+
+//Separar la Curva de respuesta del Editor.
+//Para esto hay que heredar las mismas clases que estamos usando en el editor: APEditor, Listener y Timer.
+
+struct ResponseCurveComponent :
+juce::Component,
+juce::AudioProcessorParameter::Listener,
+juce::Timer
+{
+    //Constructor y destructor
+    ResponseCurveComponent(EelEQAudioProcessor&);
+    ~ResponseCurveComponent();
+    EelEQAudioProcessor& audioProcessor;
+    
+    // Listener and Timer Callbacks
+    void parameterValueChanged (int parameterIndex, float newValue) override;
+    void parameterGestureChanged (int parameterIndex, bool gestureIsStarting) override{ };
+    void timerCallback() override;
+    juce::Atomic<bool> parametersChanged {false};
+    
+    
+    //Herencia del editor.
+    void paint (juce::Graphics& g) override;
+    
+    //MonoChain
+    MonoChain monoChain;
+    
+};
+ 
+
+
+
+
+
+
+
 
 
 
@@ -31,9 +68,8 @@ struct CustomRotatorySlider: juce::Slider {
 //==============================================================================
 /**
 */
-class EelEQAudioProcessorEditor  : public juce::AudioProcessorEditor,
-juce::AudioProcessorParameter::Listener,
-juce::Timer
+class EelEQAudioProcessorEditor  : public juce::AudioProcessorEditor
+
 {
 public:
     EelEQAudioProcessorEditor (EelEQAudioProcessor&);
@@ -44,25 +80,21 @@ public:
     void resized() override;
     
     
-    // Listener and Timer
-    void parameterValueChanged (int parameterIndex, float newValue) override;
-    void parameterGestureChanged (int parameterIndex, bool gestureIsStarting) override{ };
-    void timerCallback() override;
-    
-    
-    
     
 
 private:
     // This reference is provided as a quick way for your editor to
     // access the processor object that created it.
     EelEQAudioProcessor& audioProcessor;
-    juce::Atomic<bool> parametersChanged {false};
     
     // Declarar los sliders
     CustomRotatorySlider peakFreqSlider, peakGainSlider, peakQualitySlider,
     lowcutFreqSlider, highcutFreqSlider,
     lowcutSlopeSlider, highcutSlopeSlider;
+    
+    //ResponseCurveComponent
+    ResponseCurveComponent responseCurveComponent;
+    
     
     // Funcion Auxiliar para modificar los sliders
     
@@ -78,8 +110,6 @@ private:
     lowcutFreqSliderAttachment, highcutFreqSliderAttachment,
     lowcutSlopeSliderAttachment, highcutSlopeSliderAttachment;
     
-    
-    MonoChain monoChain;
     
     
     
