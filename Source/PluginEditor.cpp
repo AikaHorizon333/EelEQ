@@ -56,7 +56,7 @@ void LookAndFeel::drawRotarySlider(juce::Graphics& g,
         
         // TEXT and TEXTBOX
         
-        g.setFont(rswl->getTextHeight());
+        g.setFont(rswl->getTextHeight()*0.90);
         auto text = rswl->getDisplayString();
         auto strWidth = g.getCurrentFont().getStringWidth(text);
         
@@ -88,11 +88,11 @@ void RotarySliderWithLabels::paint(juce::Graphics &g){
     auto range = getRange(); //need implementation for normalized values
     auto sliderBounds = getSliderBounds();
     
-    
-    g.setColour(Colours::red);
-    g.drawRect(getLocalBounds());
-    g.setColour(Colours::yellow);
-    g.drawRect(sliderBounds);
+    // Helpers to get the proportion of the ButtonSliders (uncomment for show 'em)....
+//    g.setColour(Colours::red);
+//    g.drawRect(getLocalBounds());
+//    g.setColour(Colours::yellow);
+//    g.drawRect(sliderBounds);
     
     
     getLookAndFeel().drawRotarySlider(g,
@@ -109,7 +109,6 @@ void RotarySliderWithLabels::paint(juce::Graphics &g){
 
 juce::Rectangle<int> RotarySliderWithLabels::getSliderBounds()const
 {
-//    return getLocalBounds();
     
     auto bounds = getLocalBounds();
     
@@ -132,7 +131,49 @@ juce::Rectangle<int> RotarySliderWithLabels::getSliderBounds()const
 // Implement the string
 juce::String RotarySliderWithLabels::getDisplayString() const {
     
-    return juce::String(getValue());
+// Condition to display choices if a the parameter is a choice based parameter....
+    if (auto* choiceParam = dynamic_cast<juce::AudioParameterChoice*>(param))
+        return choiceParam ->getCurrentChoiceName();
+        
+// Here we display the units for the parameter values...
+    
+    
+    juce::String str;
+    bool addK = false; // for adding the k prefix to the Hz
+    
+    if (auto* floatParam = dynamic_cast<juce::AudioParameterFloat*>(param))
+    {
+        float val = getValue();
+        
+        if ( val > 999.f)
+        {
+            val /= 1000.f;
+            addK = true;
+        }
+        
+        // Values to strings
+        
+        str = juce::String(val, (addK ? 2:0)); // Number of decimal places, if the value is below 1000, there are no decimal places (0).
+        
+    }
+    
+    else
+    {
+        jassertfalse; //This shouldnt happen.
+    }
+    
+    
+    if (suffix.isNotEmpty()){
+        
+        str<<" ";
+        if(addK){
+            str<<"k";
+        }
+        str<<suffix;
+        
+    }
+    
+    return str;
     
 }
 
