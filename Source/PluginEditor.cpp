@@ -232,6 +232,10 @@ ResponseCurveComponent::ResponseCurveComponent(EelEQAudioProcessor& p): audioPro
         param->addListener(this);
     }
     
+    //Paint the current parameters.
+    
+    UpdateChain();
+    
     // start the timer (very importante)
     startTimerHz(60);
     
@@ -247,6 +251,24 @@ ResponseCurveComponent::~ResponseCurveComponent()
     }
     
 }
+
+void ResponseCurveComponent::UpdateChain(){
+    
+    
+    auto chainSettings = getChainSettings(audioProcessor.apvts);
+    auto peakCoefficients = makePeakFilter(chainSettings, audioProcessor.getSampleRate());
+    UpdateCoefficients(monoChain.get<ChainPositions::Peak>().coefficients,peakCoefficients);
+    
+    auto lowcutCoefficients = makeLowCutFilter(chainSettings, audioProcessor.getSampleRate());
+    auto highcutCoefficients = makeHighCutFilter(chainSettings, audioProcessor.getSampleRate());
+    
+    UpdateCutFilter(monoChain.get<ChainPositions::LowCut>(), lowcutCoefficients, chainSettings.lowCutSlope);
+    UpdateCutFilter(monoChain.get<ChainPositions::HighCut>(), highcutCoefficients, chainSettings.highCutSlope);
+    
+    
+}
+
+
 
 void ResponseCurveComponent::paint (juce::Graphics& g)
 {
@@ -363,16 +385,8 @@ void ResponseCurveComponent::timerCallback(){
         
         DBG("Params Change");
         
-        auto chainSettings = getChainSettings(audioProcessor.apvts);
-        auto peakCoefficients = makePeakFilter(chainSettings, audioProcessor.getSampleRate());
-        UpdateCoefficients(monoChain.get<ChainPositions::Peak>().coefficients,peakCoefficients);
         
-        auto lowcutCoefficients = makeLowCutFilter(chainSettings, audioProcessor.getSampleRate());
-        auto highcutCoefficients = makeHighCutFilter(chainSettings, audioProcessor.getSampleRate());
-        
-        UpdateCutFilter(monoChain.get<ChainPositions::LowCut>(), lowcutCoefficients, chainSettings.lowCutSlope);
-        UpdateCutFilter(monoChain.get<ChainPositions::HighCut>(), highcutCoefficients, chainSettings.highCutSlope);
-        
+        UpdateChain();
      
         // Redibujar la curva
         repaint();
@@ -434,10 +448,6 @@ EelEQAudioProcessorEditor::EelEQAudioProcessorEditor(EelEQAudioProcessor& p)
     highcutSlopeSlider.labels.add({1.f,"48"});
     
     
-    
-    
-    
-    
     for(auto* comp : getComp())
     {
         
@@ -445,7 +455,7 @@ EelEQAudioProcessorEditor::EelEQAudioProcessorEditor(EelEQAudioProcessor& p)
         
     }
     
-    setSize (600, 400);
+    setSize (600, 480);
 }
 
 EelEQAudioProcessorEditor::~EelEQAudioProcessorEditor()
@@ -471,8 +481,11 @@ void EelEQAudioProcessorEditor::resized()
     // subcomponents in your editor..
     
     auto bounds = getLocalBounds();
-    auto responseArea = bounds.removeFromTop(bounds.getHeight()*0.33);
+    float hRatio = 25.f/100.f; //JUCE_LIVE_CONSTANT(33)/100.f;
+    auto responseArea = bounds.removeFromTop(bounds.getHeight()*hRatio);
     responseCurveComponent.setBounds(responseArea);
+    
+    bounds.removeFromTop(5);
     
     auto lowCutArea = bounds.removeFromLeft(bounds.getWidth()*0.33);
     auto highCutArea = bounds.removeFromRight(bounds.getWidth()*0.5);

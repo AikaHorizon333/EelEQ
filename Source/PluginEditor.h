@@ -106,6 +106,8 @@ juce::Timer
     //MonoChain
     MonoChain monoChain;
     
+    void UpdateChain();
+    
 };
  
 
