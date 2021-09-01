@@ -384,7 +384,7 @@ juce::AudioProcessorValueTreeState::ParameterLayout EelEQAudioProcessor::createP
         
         juce::String str;
         str << (12 + i*12);
-        str << " dB/octv";
+        str << " dB/Oct";
         stringArray.add(str);
         
     }

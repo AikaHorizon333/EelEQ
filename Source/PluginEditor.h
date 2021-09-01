@@ -45,6 +45,18 @@ struct RotarySliderWithLabels: juce::Slider {
         
     }
     
+    // Etiquetas de valores minimos y máximos...
+    
+    struct LabelPos {
+        
+        float pos; //normalized possition
+        juce::String label; //label name ex:  20 Hz - 20kHz.
+        
+    };
+    
+    
+    juce::Array<LabelPos> labels;
+    
     
     //Instancias para el LookAndFeel
     juce::RangedAudioParameter* param;

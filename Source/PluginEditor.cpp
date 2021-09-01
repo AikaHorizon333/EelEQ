@@ -88,7 +88,7 @@ void RotarySliderWithLabels::paint(juce::Graphics &g){
     auto range = getRange(); //need implementation for normalized values
     auto sliderBounds = getSliderBounds();
     
-    // Helpers to get the proportion of the ButtonSliders (uncomment for show 'em)....
+// Helpers to get the proportion of the ButtonSliders (uncomment for show 'em)....
 //    g.setColour(Colours::red);
 //    g.drawRect(getLocalBounds());
 //    g.setColour(Colours::yellow);
@@ -104,6 +104,47 @@ void RotarySliderWithLabels::paint(juce::Graphics &g){
                                       startAng,
                                       endAng,
                                       *this);
+    
+    
+    
+// Dibujar los limites minimos y máximos de los sliders...
+    auto center = sliderBounds.toFloat().getCentre();
+    auto radius = sliderBounds.getWidth()*0.5;
+    
+    g.setColour(Colours::yellowgreen);
+    g.setFont(getTextHeight());
+    
+    auto numChoices = labels.size();
+    
+    for(int i =0; i < numChoices ; ++i)
+    {
+        
+        auto pos =labels[i].pos;
+        
+        jassert(0.f<=pos);
+        jassert(pos<=1.f);
+        
+        auto ang = jmap(pos, 0.f, 1.f, startAng, endAng);  // mapeo de los min y max de los sliders...
+        auto c = center.getPointOnCircumference(radius + getTextHeight()*0.5 + 1, ang); // fijar un punto para dibujar el texto.
+        
+        Rectangle<float> r;
+        auto str = labels[i].label;
+        r.setSize(g.getCurrentFont().getStringWidth(str), getTextHeight());
+        r.setCentre(c);
+        r.setY(r.getY() + getTextHeight());
+        
+        g.drawFittedText(str, r.toNearestInt(), juce::Justification::centred, 1);
+        //Inicializar los labels desde el constructor
+        
+    }
+    
+   
+    
+    
+    
+    
+    
+    
     
 }
 
@@ -128,7 +169,7 @@ juce::Rectangle<int> RotarySliderWithLabels::getSliderBounds()const
 
 
 
-// Implement the string
+// Implement the string ======================================
 juce::String RotarySliderWithLabels::getDisplayString() const {
     
 // Condition to display choices if a the parameter is a choice based parameter....
@@ -154,7 +195,6 @@ juce::String RotarySliderWithLabels::getDisplayString() const {
         // Values to strings
         
         str = juce::String(val, (addK ? 2:0)); // Number of decimal places, if the value is below 1000, there are no decimal places (0).
-        
     }
     
     else
@@ -170,7 +210,6 @@ juce::String RotarySliderWithLabels::getDisplayString() const {
             str<<"k";
         }
         str<<suffix;
-        
     }
     
     return str;
@@ -369,6 +408,35 @@ EelEQAudioProcessorEditor::EelEQAudioProcessorEditor(EelEQAudioProcessor& p)
 {
     // Make sure that before the constructor has finished, you've set the
     // editor's size to whatever you need it to be.
+    
+// Inicialización de los Labels
+    
+    peakFreqSlider.labels.add({0.f,"20 Hz"});
+    peakFreqSlider.labels.add({1.f,"20 kHz"});
+    
+    peakGainSlider.labels.add({0.f,"-24.0 dB"});
+    peakGainSlider.labels.add({1.f,"24.0 dB"});
+    
+    peakQualitySlider.labels.add({0.f,"0.1 Q"});
+    peakQualitySlider.labels.add({1.f,"15.0 Q"});
+    
+    
+    lowcutFreqSlider.labels.add({0.f,"20 Hz"});
+    lowcutFreqSlider.labels.add({1.f,"20 kHz"});
+    
+    lowcutSlopeSlider.labels.add({0.f,"12"});
+    lowcutSlopeSlider.labels.add({1.f,"48"});
+    
+    highcutFreqSlider.labels.add({0.f,"20 Hz"});
+    highcutFreqSlider.labels.add({1.f,"20 kHz"});
+    
+    highcutSlopeSlider.labels.add({0.f,"12"});
+    highcutSlopeSlider.labels.add({1.f,"48"});
+    
+    
+    
+    
+    
     
     for(auto* comp : getComp())
     {
