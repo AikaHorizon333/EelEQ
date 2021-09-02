@@ -395,8 +395,8 @@ void ResponseCurveComponent::resized(){
     
     Array<float> gain {
         
-        24.f, 12.f,6.f,0.f,
-        -6.f,-12.f,-24.f
+        24.f,18.f, 12.f,6.f,0.f,
+        -6.f,-12.f,-18.f,-24.f
         
     };
     
@@ -480,7 +480,7 @@ void ResponseCurveComponent::resized(){
         
         auto textWidth = g.getCurrentFont().getStringWidth(str);
         
-        //textbox para la ganancia
+        //textbox para la ganancia del EQ
         Rectangle<int> r;
         r.setSize(textWidth, fontHeight);
         r.setX(getWidth()-textWidth);
@@ -489,6 +489,21 @@ void ResponseCurveComponent::resized(){
         g.setColour(gdB == 0 ? Colours::darkgreen : Colours::lightgrey);
         
         g.drawFittedText(str,r, juce::Justification::centred, 1);
+        
+        
+        //textbox para el analizador de frecuencia
+        str.clear();
+        str << (gdB -24.f);
+        
+        //Actualizamos el tamaño del str a mostrar
+        textWidth = g.getCurrentFont().getStringWidth(str);
+        
+        r.setSize(textWidth, fontHeight);
+        r.setX(1);
+        
+        //Actualizamos los colores
+        g.setColour(Colours::lightgrey);
+        g.drawFittedText(str, r, juce::Justification::centred, 1);
         
     }
     
