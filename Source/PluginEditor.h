@@ -115,6 +115,14 @@ juce::Timer
     
     void UpdateChain();
     
+    //FFT
+    
+    
+    
+    
+    
+    
+    
 };
  
 

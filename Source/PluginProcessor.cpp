@@ -107,6 +107,10 @@ void EelEQAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
     
     UpdateFilters();
     
+    //preparar FIFOS
+    leftChannelFifo.prepare(samplesPerBlock);
+    rightChannelFifo.prepare(samplesPerBlock);
+    
     
 }
 
@@ -181,6 +185,10 @@ void EelEQAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::
     // Pasar el contexto a las cadenas
     leftChain.process(leftContext);
     rightChain.process(rightContext);
+    
+    //Update to Fifo's
+    leftChannelFifo.update(buffer);
+    rightChannelFifo.update(buffer);
     
     
     
