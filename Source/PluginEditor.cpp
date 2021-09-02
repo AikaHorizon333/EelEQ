@@ -464,13 +464,33 @@ void ResponseCurveComponent::resized(){
         r.setY(1);
         
         g.drawFittedText(str,r,juce::Justification::centred, 1);
-        
-        
-        
+    
     }
     
     
-    
+    for (auto gdB : gain){
+        
+        //Coordenadas de mapeo para las labels de ganacia..
+        auto y = jmap(gdB, -24.f, 24.f, float(bottom),float(top));
+        
+        String str;
+        if( gdB> 0)
+            str << "+";
+        str << gdB;
+        
+        auto textWidth = g.getCurrentFont().getStringWidth(str);
+        
+        //textbox para la ganancia
+        Rectangle<int> r;
+        r.setSize(textWidth, fontHeight);
+        r.setX(getWidth()-textWidth);
+        r.setCentre(r.getCentreX(), y);
+        
+        g.setColour(gdB == 0 ? Colours::darkgreen : Colours::lightgrey);
+        
+        g.drawFittedText(str,r, juce::Justification::centred, 1);
+        
+    }
     
     
     
