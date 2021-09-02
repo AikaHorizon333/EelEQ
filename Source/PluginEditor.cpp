@@ -277,11 +277,16 @@ void ResponseCurveComponent::paint (juce::Graphics& g)
     // (Our component is opaque, so we must completely fill the background with a solid colour)
     g.fillAll (Colours::black);
     
+    g.drawImage(background, getBounds().toFloat());
+    
+    
+    
     //Drawing the response curve...
     
     //We need to get the bounds and the width of the response area.
     
-    auto responseArea = getLocalBounds();
+//    auto responseArea = getLocalBounds();
+    auto responseArea = getAnalysisArea(); //getRenderArea();
     
     auto w = responseArea.getWidth();
     
@@ -360,7 +365,7 @@ void ResponseCurveComponent::paint (juce::Graphics& g)
     
     // Drawing the Response curve
     g.setColour(Colours::orange);
-    g.drawRoundedRectangle(responseArea.toFloat(), 4.f, 1.5f);
+    g.drawRoundedRectangle(getRenderArea().toFloat(), 4.f, 1.5f);
     
     // Drawing the path
     g.setColour(Colours::white);
@@ -368,6 +373,99 @@ void ResponseCurveComponent::paint (juce::Graphics& g)
     
     
 }
+
+void ResponseCurveComponent::resized(){
+    
+    // PreRender the Frequency plot...
+    
+    using namespace juce;
+    background = Image(Image::PixelFormat::RGB, getWidth(), getHeight(), true);
+    
+    // Creación del contexto...
+    Graphics g(background);
+    
+    Array<float> freqs {
+        
+        20,50,100,
+        200,500,1000,
+        2000,5000,10000,
+        20000
+        
+    };
+    
+    Array<float> gain {
+        
+        24.f, 12.f,6.f,0.f,
+        -6.f,-12.f,-24.f
+        
+    };
+    
+    // Dibujamos las frecuencias (mapFromLog y drawVerticalLine)
+    // Catch the Analysis Area
+    
+    auto renderArea = getAnalysisArea();
+    auto left = renderArea.getX();
+    auto right = renderArea.getRight();
+    auto top = renderArea.getY();
+    auto bottom = renderArea.getBottom();
+    auto width =renderArea.getWidth();
+    
+    Array<float> xs;
+    for (auto f: freqs){
+        auto normX = mapFromLog10(f, 20.f, 20000.f);
+        xs.add(left + width*normX);
+    }
+    
+    g.setColour(Colours::dimgrey);
+    for (auto x: xs)
+    { g.drawVerticalLine(x, left, right);}
+
+    // Dibujamos la ganancia
+    
+    for (auto gdB: gain)
+    {
+        auto y = jmap(gdB, -24.f, 24.f, float(bottom), float(top));
+        g.setColour(gdB == 0.f ? Colours::green : Colours::dimgrey); // Si es 0dB se pinta de verde..
+        g.drawHorizontalLine(y, left, right);
+    }
+    
+//    g.drawRect(getAnalysisArea());
+}
+
+juce::Rectangle <int> ResponseCurveComponent::getRenderArea(){
+    
+    
+    auto bounds = getLocalBounds();
+    
+//    bounds.reduce(10,//JUCE_LIVE_CONSTANT(5),
+//                  8 //JUCE_LIVE_CONSTANT(5)
+//                  );
+//
+    
+    bounds.removeFromTop(10);
+    bounds.removeFromBottom(2);
+    bounds.removeFromLeft(20);
+    bounds.removeFromRight(20);
+    
+    
+    return bounds;
+}
+
+juce::Rectangle<int> ResponseCurveComponent::getAnalysisArea(){
+    
+    auto bounds = getRenderArea();
+    
+    bounds.removeFromTop(4);
+    bounds.removeFromBottom(4);
+    
+    return bounds;
+    
+}
+
+
+
+
+
 
 void ResponseCurveComponent::parameterValueChanged(int parameterIndex, float newValue){
     

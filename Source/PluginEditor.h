@@ -102,6 +102,13 @@ juce::Timer
     
     //Herencia del editor.
     void paint (juce::Graphics& g) override;
+    void resized()override;
+    
+    //BG Image for frequency Plot
+    juce::Image background;
+    
+    juce::Rectangle<int> getRenderArea();
+    juce::Rectangle<int> getAnalysisArea();
     
     //MonoChain
     MonoChain monoChain;
