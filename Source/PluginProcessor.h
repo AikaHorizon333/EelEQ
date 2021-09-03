@@ -346,6 +346,7 @@ public:
     
     using BlockType = juce::AudioBuffer<float>;
     SingleChannelSampleFifo<BlockType> leftChannelFifo {Channel::Left};
+    SingleChannelSampleFifo<BlockType> rightChannelFifo{Channel::Right};
     
 private:
     
@@ -358,6 +359,10 @@ private:
     void UpdateHighCut(const ChainSettings& chainSettings);
     
     void UpdateFilters();
+    
+    //Creamos un Oscilador para calibrar la FFT
+    
+    juce::dsp::Oscillator<float> osc;
     
     
     

@@ -109,6 +109,15 @@ void EelEQAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
     
     //preparar FIFOS
     leftChannelFifo.prepare(samplesPerBlock);
+    rightChannelFifo.prepare(samplesPerBlock);
+    
+    //Preparar el oscilador auxiliar...
+    osc.initialise([](float x){return std::sin(x);}); // esta función lambda pasa una sinoidal
+    
+    spec.numChannels = getTotalNumInputChannels();
+    osc.prepare(spec);
+    osc.setFrequency(100);
+    
     
 }
 
@@ -172,6 +181,16 @@ void EelEQAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::
     // Definir la instancia del AudioBlock
     juce::dsp::AudioBlock<float> block(buffer);
     
+    
+    //Oscilador de calibración para la FFT: (por el momento está apagado)
+    
+//    buffer.clear();
+//    juce::dsp::ProcessContextReplacing<float> stereoContext(block);
+//    osc.process(stereoContext);
+    
+    
+    
+    
     // Extraer los canales dentro del AudioBlock
     auto leftBlock = block.getSingleChannelBlock(0);
     auto rightBlock = block.getSingleChannelBlock(1);
@@ -186,6 +205,7 @@ void EelEQAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::
     
     //Update to Fifo's
     leftChannelFifo.update(buffer);
+    rightChannelFifo.update(buffer);
     
 }
 

@@ -229,7 +229,7 @@ leftChannelFifo(&audioProcessor.leftChannelFifo)
     
     // Get the order of the FFT and set the monoBuffer size...
     
-    leftChannelFFTDataGenerator.changeOrder(FFTOrder::order2048);
+    leftChannelFFTDataGenerator.changeOrder(FFTOrder::order4096);
     monoBuffer.setSize(1, leftChannelFFTDataGenerator.getFFTSize());
     
     //Paint the current parameters.
@@ -354,9 +354,9 @@ void ResponseCurveComponent::paint (juce::Graphics& g)
     responseCurve.startNewSubPath(responseArea.getX(), map(mags.front())); // this will run the first value of the jmap.
     
     //this checks the values and maps them into the response curve.
-    for( size_t i =1; i < mags.size(); ++i)
+    for( size_t i = 1 ; i < mags.size(); ++i)
     {
-        responseCurve.lineTo(responseArea.getX()+i, map(mags[i]));
+        responseCurve.lineTo(responseArea.getX() + i, map(mags[i]));
     }
     
     //Drawing the FFT
@@ -371,7 +371,7 @@ void ResponseCurveComponent::paint (juce::Graphics& g)
     
     // Drawing the Response curve
     g.setColour(Colours::orange);
-    g.drawRoundedRectangle(getRenderArea().toFloat(), 4.f, 1.5f);
+    g.drawRoundedRectangle(getRenderArea().toFloat(), 4.f, 1.f);
     
     // Drawing the path
     g.setColour(Colours::white);
@@ -401,8 +401,8 @@ void ResponseCurveComponent::resized(){
     
     Array<float> gain {
         
-        24.f,18.f, 12.f,6.f,0.f,
-        -6.f,-12.f,-18.f,-24.f
+        24.f, 12.f,0.f,
+        -12.f,-24.f
         
     };
     
