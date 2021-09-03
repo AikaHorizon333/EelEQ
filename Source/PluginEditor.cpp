@@ -360,7 +360,11 @@ void ResponseCurveComponent::paint (juce::Graphics& g)
     }
     
     //Drawing the FFT
-    g.setColour(Colours::blue);
+    
+    //Center the FFT to the ResponseArea...
+    leftChannelFFTPath.applyTransform(AffineTransform().translation(responseArea.getX(), responseArea.getY()));
+    
+    g.setColour(Colours::skyblue);
     g.strokePath(leftChannelFFTPath, PathStrokeType(1.f));
     
     
