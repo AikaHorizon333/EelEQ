@@ -223,11 +223,6 @@ struct RotarySliderWithLabels: juce::Slider {
     juce::Array<LabelPos> labels;
     
     
-    //Instancias para el LookAndFeel
-    juce::RangedAudioParameter* param;
-    juce::String suffix;
-    LookAndFeel lnf;
-    
     
     //Metodo de paint
     void paint(juce::Graphics &g)override;
@@ -237,11 +232,49 @@ struct RotarySliderWithLabels: juce::Slider {
     int getTextHeight() const {return 14;}
     juce::String getDisplayString() const;
     
+    
+private:
+    //Instancias para el LookAndFeel
+    juce::RangedAudioParameter* param;
+    juce::String suffix;
+    LookAndFeel lnf;
+    
 };
 
 
 //==============================================================================
 
+struct PathProducer {
+    
+    PathProducer(SingleChannelSampleFifo<EelEQAudioProcessor::BlockType>& scsf) :
+    leftChannelFifo(&scsf)
+    {
+        //Migarar el codigo del constructor:
+        
+        leftChannelFFTDataGenerator.changeOrder(FFTOrder::order4096);
+        monoBuffer.setSize(1, leftChannelFFTDataGenerator.getFFTSize());
+        
+        
+    }
+    
+    
+    void process(juce::Rectangle<float> fftBounds, double sampleRate);
+    juce::Path getPath(){return leftChannelFFTPath;}
+    
+private:
+    
+    SingleChannelSampleFifo<EelEQAudioProcessor::BlockType>* leftChannelFifo;
+    juce::AudioBuffer<float> monoBuffer;
+    FFTDataGenerator<std::vector<float>> leftChannelFFTDataGenerator;
+    AnalyzerPathGenerator<juce::Path> pathProducer;
+    juce::Path leftChannelFFTPath;
+    
+    
+};
+
+
+
+//==============================================================================
 //Separar la Curva de respuesta del Editor.
 //Para esto hay que heredar las mismas clases que estamos usando en el editor: APEditor, Listener y Timer.
 
@@ -278,12 +311,8 @@ juce::Timer
     void UpdateChain();
     
     //FFT
-    SingleChannelSampleFifo<EelEQAudioProcessor::BlockType>* leftChannelFifo;
-    juce::AudioBuffer<float> monoBuffer; 
-    FFTDataGenerator<std::vector<float>> leftChannelFFTDataGenerator;
-    AnalyzerPathGenerator<juce::Path> pathProducer;
-    
-    juce::Path leftChannelFFTPath;
+    PathProducer leftPathProducer, rightPathProducer;
+   
     
 };
  
