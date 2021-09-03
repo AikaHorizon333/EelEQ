@@ -138,14 +138,6 @@ void RotarySliderWithLabels::paint(juce::Graphics &g){
         
     }
     
-   
-    
-    
-    
-    
-    
-    
-    
 }
 
 juce::Rectangle<int> RotarySliderWithLabels::getSliderBounds()const
@@ -223,7 +215,10 @@ juce::String RotarySliderWithLabels::getDisplayString() const {
 //==============================================================================
 //ResponseCurveComponent
 
-ResponseCurveComponent::ResponseCurveComponent(EelEQAudioProcessor& p): audioProcessor(p){
+ResponseCurveComponent::ResponseCurveComponent(EelEQAudioProcessor& p):
+audioProcessor(p),
+leftChannelFifo(&audioProcessor.leftChannelFifo)
+{
     
     // Add listeer
     
@@ -231,6 +226,11 @@ ResponseCurveComponent::ResponseCurveComponent(EelEQAudioProcessor& p): audioPro
     for(auto param: params){
         param->addListener(this);
     }
+    
+    // Get the order of the FFT and set the monoBuffer size...
+    
+    leftChannelFFTDataGenerator.changeOrder(FFTOrder::order2048);
+    monoBuffer.setSize(1, leftChannelFFTDataGenerator.getFFTSize());
     
     //Paint the current parameters.
     
@@ -249,7 +249,6 @@ ResponseCurveComponent::~ResponseCurveComponent()
     for(auto param: params){
         param->removeListener(this);
     }
-    
 }
 
 void ResponseCurveComponent::UpdateChain(){
@@ -278,8 +277,6 @@ void ResponseCurveComponent::paint (juce::Graphics& g)
     g.fillAll (Colours::black);
     
     g.drawImage(background, getBounds().toFloat());
-    
-    
     
     //Drawing the response curve...
     
@@ -348,20 +345,25 @@ void ResponseCurveComponent::paint (juce::Graphics& g)
 
     const double outputMin = responseArea.getBottom();
     const double outputMax = responseArea.getY();
-    auto map = [outputMin, outputMax](double input){
-        
+    auto map = [outputMin, outputMax](double input)
+    {
         return jmap(input, -24.0, 24.0, outputMin, outputMax);
-        
     };
     
     //this starts the mapping
     responseCurve.startNewSubPath(responseArea.getX(), map(mags.front())); // this will run the first value of the jmap.
     
     //this checks the values and maps them into the response curve.
-    for( size_t i =1; i < mags.size(); ++i){
-        
+    for( size_t i =1; i < mags.size(); ++i)
+    {
         responseCurve.lineTo(responseArea.getX()+i, map(mags[i]));
     }
+    
+    //Drawing the FFT
+    g.setColour(Colours::blue);
+    g.strokePath(leftChannelFFTPath, PathStrokeType(1.f));
+    
+    
     
     // Drawing the Response curve
     g.setColour(Colours::orange);
@@ -507,20 +509,12 @@ void ResponseCurveComponent::resized(){
         
     }
     
-    
-    
-    
 }
 
 juce::Rectangle <int> ResponseCurveComponent::getRenderArea(){
     
     
     auto bounds = getLocalBounds();
-    
-//    bounds.reduce(10,//JUCE_LIVE_CONSTANT(5),
-//                  8 //JUCE_LIVE_CONSTANT(5)
-//                  );
-//
     
     bounds.removeFromTop(10);
     bounds.removeFromBottom(2);
@@ -542,11 +536,6 @@ juce::Rectangle<int> ResponseCurveComponent::getAnalysisArea(){
     
 }
 
-
-
-
-
-
 void ResponseCurveComponent::parameterValueChanged(int parameterIndex, float newValue){
     
     // Set the atomic flag
@@ -556,24 +545,75 @@ void ResponseCurveComponent::parameterValueChanged(int parameterIndex, float new
 
 void ResponseCurveComponent::timerCallback(){
     
+    juce::AudioBuffer<float> tempIncomingBuffer;
+    
+    while(leftChannelFifo -> getNumCompleteBuffersAvailable() > 0)
+    {
+        
+        if (leftChannelFifo->getAudioBuffer(tempIncomingBuffer))
+        {
+            //Vamos a recorrer el buffer el numero de samples que estan en el buffer temporal
+            auto size = tempIncomingBuffer.getNumSamples();
+            
+            // copiamos el buffer y lo recorremos #size samples a la izquierda
+            juce::FloatVectorOperations::copy(monoBuffer.getWritePointer(0,0),
+                                              monoBuffer.getReadPointer(0,size),
+                                              monoBuffer.getNumSamples() - size );
+            
+            juce::FloatVectorOperations::copy(monoBuffer.getWritePointer(0, monoBuffer.getNumSamples() - size),
+                                              tempIncomingBuffer.getReadPointer(0, 0),
+                                              size);
+      
+            leftChannelFFTDataGenerator.produceFFTDataForRendering(monoBuffer, -48.f);
+            
+            // -48 represents the -infinity. also is the bottom of the display...
+
+        }
+    }
+    //If there are FFT data buffers to pull
+    //If we can pull a buffer,  genereate a path...
+    
+    
+    auto fftBounds = getAnalysisArea().toFloat();
+    auto fftSize = leftChannelFFTDataGenerator.getFFTSize();
+    
+    const auto binWidth = audioProcessor.getSampleRate() / (double)fftSize;
+    
+    while (leftChannelFFTDataGenerator.getNumAvailableFFTDataBlocks() > 0)
+    {
+        
+        std::vector<float> fftData;
+        if(leftChannelFFTDataGenerator.getFFTData(fftData))
+        {
+            pathProducer.generatePath(fftData, fftBounds, fftSize, binWidth, -48.f);
+    
+        }
+    }
+    
+    //Actualizar los paths y utilizar los más recientes...
+    
+    while (pathProducer.getNumPathsAvailable()>0)
+    {
+        pathProducer.getPath(leftChannelFFTPath);
+    }
+    
+    
+    
+    
     // Solo va a actualizar si se realizó algun cambio en el parametro
     if(parametersChanged.compareAndSetBool(false, true))
     {
         // Actualizar el monoChain
         
         DBG("Params Change");
-        
-        
         UpdateChain();
-     
         // Redibujar la curva
-        repaint();
-        
+//        repaint();
         
     }
-
+    
+    repaint();
 }
-
 
 //==============================================================================
 EelEQAudioProcessorEditor::EelEQAudioProcessorEditor(EelEQAudioProcessor& p)
@@ -593,10 +633,6 @@ EelEQAudioProcessorEditor::EelEQAudioProcessorEditor(EelEQAudioProcessor& p)
     highcutFreqSliderAttachment(audioProcessor.apvts, "HighCut Freq",  highcutFreqSlider),
     lowcutSlopeSliderAttachment(audioProcessor.apvts, "LowCut Slope", lowcutSlopeSlider),
     highcutSlopeSliderAttachment(audioProcessor.apvts, "HighCut Slope", highcutSlopeSlider)
-
-
-
-
 {
     // Make sure that before the constructor has finished, you've set the
     // editor's size to whatever you need it to be.
@@ -628,9 +664,7 @@ EelEQAudioProcessorEditor::EelEQAudioProcessorEditor(EelEQAudioProcessor& p)
     
     for(auto* comp : getComp())
     {
-        
         addAndMakeVisible(comp);
-        
     }
     
     setSize (600, 480);
@@ -650,7 +684,6 @@ void EelEQAudioProcessorEditor::paint (juce::Graphics& g)
     // (Our component is opaque, so we must completely fill the background with a solid colour)
     g.fillAll (Colours::black);
 
-    
 }
 
 void EelEQAudioProcessorEditor::resized()

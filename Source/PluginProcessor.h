@@ -19,7 +19,12 @@ struct Fifo
 {
     void prepare (int numChannels, int numSamples){
         
-        for (auto& buffer : buffers){
+        //Fixing the BlockType and Vector bug...
+        static_assert(std::is_same_v<T, juce::AudioBuffer<float>>,
+                      "prepare(numChannels, numSamples) should only be used when the Fifo is holding juce::AudioBuffer<float>" );
+        
+        for (auto& buffer : buffers)
+        {
             
             buffer.setSize(numChannels,
                            numSamples,
@@ -32,31 +37,49 @@ struct Fifo
         }
     }
     
+    void prepare(size_t numElements)
+    {
+        static_assert(std::is_same_v<T, std::vector<float>>,
+                      "prepare(numElements) should only be used when the Fifo is holding std::vector<float>" );
+        
+        for(auto& buffer : buffers)
+        {
+            
+            buffer.clear();
+            buffer.resize(numElements, 0);
+            
+        }
+        
+    }
+    
     bool push(const T& t)
     {
         auto write = fifo.write(1);
-        if(write.blockSize1>0){
-            
+       
+        if(write.blockSize1>0)
+        {
             buffers[write.startIndex1] = t;
             return true;
         }
+        
         return false;
     }
     
     bool pull (T& t)
     {
         auto read = fifo.read(1);
-        if (read.blockSize1>0){
-            
+        if (read.blockSize1>0)
+        {
             t = buffers[read.startIndex1];
             return true;
             
         }
+        
         return false;
     }
     
-    
-    int getNumAvailableForReading() const {
+    int getNumAvailableForReading() const
+    {
         
         return fifo.getNumReady();
         
@@ -96,7 +119,7 @@ struct SingleChannelSampleFifo
         jassert(buffer.getNumChannels() > channelToUse );
         auto* channelPtr = buffer.getReadPointer(channelToUse);
         
-        for (int i = 0; i < buffer.getNumOfSamples(); ++i){
+        for (int i = 0; i < buffer.getNumSamples(); ++i){
             
             pushNextSampleIntoFifo(channelPtr[i]);
             
@@ -323,12 +346,7 @@ public:
     
     using BlockType = juce::AudioBuffer<float>;
     SingleChannelSampleFifo<BlockType> leftChannelFifo {Channel::Left};
-    SingleChannelSampleFifo<BlockType> rightChannelFifo {Channel::Right};
     
-    
-    
-    
-
 private:
     
     
