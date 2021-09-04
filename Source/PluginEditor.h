@@ -189,6 +189,17 @@ struct LookAndFeel: juce::LookAndFeel_V4{
                                    float rotaryEndAngle,
                            juce::Slider&) override;
    
+    
+    
+    void drawToggleButton (juce::Graphics&,
+                           juce::ToggleButton& toggleButton,
+                           bool shouldDrawButtonAsHighlighted,
+                           bool shouldDrawButtonAsDown
+                           ) override;
+    
+    
+    
+    
 };
 
 struct RotarySliderWithLabels: juce::Slider {
@@ -372,11 +383,18 @@ private:
     lowcutFreqSliderAttachment, highcutFreqSliderAttachment,
     lowcutSlopeSliderAttachment, highcutSlopeSliderAttachment;
     
+    
+    //Botones de Bypass...
+    
     juce::ToggleButton lowCutBypassButton, highCutBypassButton, peakBypassButton, analyzerEnabledButton;
     
     using ButtonAttachment = APVTS::ButtonAttachment;
     
     ButtonAttachment lowCutBypassButtonAttachment, highCutBypassButtonAttachment, peakButtonBypassAttachment, analyzerEnabledButtonAttachment;
+    
+    LookAndFeel lnf;
+    
+    
     
     
     
