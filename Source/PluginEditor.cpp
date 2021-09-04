@@ -9,15 +9,17 @@
 #include "PluginProcessor.h"
 #include "PluginEditor.h"
 
-//==============================================================================
-//LookAndFeel
+//================================================================================
+//==================================LookAndFeel===================================
+//================================================================================
 
 void LookAndFeel::drawRotarySlider(juce::Graphics& g,
                                    int x, int y, int width, int height,
                                    float sliderPosProportional,
                                    float rotaryStartAngle,
                                    float rotaryEndAngle,
-                                   juce::Slider& slider){
+                                   juce::Slider& slider)
+{
     
     using namespace juce;
     
@@ -37,18 +39,19 @@ void LookAndFeel::drawRotarySlider(juce::Graphics& g,
         Path p;
         
         Rectangle<float> r;
-        r.setLeft(center.getX()-5);
-        r.setRight(center.getX()+5);
+        r.setLeft(center.getX() - 5);
+        r.setRight(center.getX() + 5);
         r.setTop(bounds.getY());
-        r.setBottom(center.getY() - rswl->getTextHeight()*1.5); // addapt the bottom in relation to the text.
+        r.setBottom(center.getY() - rswl->getTextHeight() * 1.5); // addapt the bottom in relation to the text.
         
         p.addRoundedRectangle(r, 2.f);
         
-        //This gets the center to the pointer rectangle.
+        //This gets the center to the pointer rectangle:
         
-        jassert(rotaryStartAngle<rotaryEndAngle); //catching errors.
+        jassert(rotaryStartAngle < rotaryEndAngle);
         
-        auto sliderAngRad = jmap(sliderPosProportional, 0.f, 1.f, rotaryStartAngle, rotaryEndAngle); //mapear los valores de posisción entre el angulo de inicio y el angulo final.
+        //mapear los valores de posisción entre el angulo de inicio y el angulo final.
+        auto sliderAngRad = jmap(sliderPosProportional, 0.f, 1.f, rotaryStartAngle, rotaryEndAngle);
         
         p.applyTransform(AffineTransform().rotated(sliderAngRad,center.getX(), center.getY()));
         
@@ -67,7 +70,7 @@ void LookAndFeel::drawRotarySlider(juce::Graphics& g,
         g.fillRect(r);
         
         g.setColour(Colours::white);
-        g.drawFittedText(text, r.toNearestInt(), juce::Justification::centred, 1); // Poner el Texto en el rectangulo
+        g.drawFittedText(text, r.toNearestInt(), juce::Justification::centred, 1); // Esto pone el Texto en el rectangulo
     }
     
 }
@@ -83,46 +86,87 @@ void LookAndFeel::drawToggleButton(juce::Graphics &g,
     
     using namespace juce;
     
-    Path powerButton;
+    if(auto* pb = dynamic_cast<PowerButton*>(&toggleButton))
+    {
+        Path powerButton;
+        
+        auto bounds = toggleButton.getLocalBounds();
+        
+    //GUI helper: Uncommet to see them...
+//        g.setColour(Colours::red);
+//        g.drawRect(bounds);
+        
+        auto size = jmin(bounds.getWidth(), bounds.getHeight() - 6);
+        auto r = bounds.withSizeKeepingCentre(size, size).toFloat();
+        
+        float ang = 30.f;
+        size -= 6;
+        
+        //Dibujar el boton de encendido...
+        //arco
+        powerButton.addCentredArc(r.getCentreX(),
+                                  r.getCentreY(),
+                                  size * 0.5,
+                                  size * 0.5,
+                                  0.f,
+                                  degreesToRadians(ang),
+                                  degreesToRadians(360.f - ang),
+                                  true);
+        
+        //linea Vertical
+        powerButton.startNewSubPath(r.getCentreX(), r.getY());
+        powerButton.lineTo((r.getCentre()));
+        PathStrokeType pst(2.f, PathStrokeType::JointStyle::curved);
+        
+        
+        // Está encendido o apagado
+        auto color = toggleButton.getToggleState() ? Colours::dimgrey : Colours::yellowgreen;
+        
+        g.setColour(color);
+        g.strokePath(powerButton, pst);
+        g.drawEllipse(r, 2.f);
+    }
     
-    auto bounds = toggleButton.getLocalBounds();
-    auto size = jmin(bounds.getWidth(), bounds.getHeight()-6);
-    auto r = bounds.withSizeKeepingCentre(size, size).toFloat();
-    
-    float ang = 30.f;
-    size -= 6;
-    
-    //Dibujar el boton de encendido...
-    //arco
-    powerButton.addCentredArc(r.getCentreX(),
-                              r.getCentreY(),
-                              size * 0.5,
-                              size*0.5,
-                              0.f,
-                              degreesToRadians(ang),
-                              degreesToRadians(360.f - ang),
-                              true);
-    
-    //linea Vertical
-    powerButton.startNewSubPath(r.getCentreX(), r.getY());
-    powerButton.lineTo((r.getCentre()));
-    PathStrokeType pst(2.f, PathStrokeType::JointStyle::curved);
-    
-    
-    // Está encendido o apagado
-    auto color = toggleButton.getToggleState() ? Colours::dimgrey : Colours::darkgreen;
-    
-    g.setColour(color);
-    g.strokePath(powerButton, pst);
-    g.drawEllipse(r, 2.f);
-    
+    else if (auto* ab = dynamic_cast<AnalyzerButton*>(&toggleButton))
+    {
+        
+        //Queremos dibujar
+        auto color = ! toggleButton.getToggleState() ? Colours::dimgrey : Colours::yellowgreen;
+        
+        g.setColour(color);
+        
+        auto bounds = toggleButton.getLocalBounds();
+        g.drawRect(bounds);
+        
+        auto insetRect = bounds.reduced(4);
+        
+        Path randomPath;
+        
+        Random r;
+        
+        //Crear los puntos
+        randomPath.startNewSubPath(insetRect.getX(),
+                                   insetRect.getY() + insetRect.getHeight() * r.nextFloat());
+        
+        //Unir puntos
+        for (auto x = insetRect.getX() + 1; x < insetRect.getRight(); x += 2 )
+        {
+            randomPath.lineTo(x,
+                              insetRect.getY() + insetRect.getHeight() * r.nextFloat());
+        }
+        
+        g.strokePath(randomPath, PathStrokeType(1.f));
+        
+    }
 }
 
+//================================================================================
+//==========================RotarySliderWithLabels================================
+//================================================================================
 
-//==============================================================================
-//RotarySliderWithLabel
 
-void RotarySliderWithLabels::paint(juce::Graphics &g){
+void RotarySliderWithLabels::paint(juce::Graphics &g)
+{
     using namespace juce;
     
     // we set de angles of the 0 and the 1 values
@@ -132,7 +176,8 @@ void RotarySliderWithLabels::paint(juce::Graphics &g){
     auto range = getRange(); //need implementation for normalized values
     auto sliderBounds = getSliderBounds();
     
-// Helpers to get the proportion of the ButtonSliders (uncomment for show 'em)....
+//Helpers to get the proportion of the ButtonSliders (uncomment for show 'em)....
+    
 //    g.setColour(Colours::red);
 //    g.drawRect(getLocalBounds());
 //    g.setColour(Colours::yellow);
@@ -144,12 +189,10 @@ void RotarySliderWithLabels::paint(juce::Graphics &g){
                                       sliderBounds.getY(),
                                       sliderBounds.getWidth(),
                                       sliderBounds.getHeight(),
-                                      jmap(getValue(),range.getStart(),range.getEnd(),0.0,1.0), // here is where we Normalize the slider value
+                                      jmap(getValue(),range.getStart(),range.getEnd(),0.0,1.0),
                                       startAng,
                                       endAng,
                                       *this);
-    
-    
     
 // Dibujar los limites minimos y máximos de los sliders...
     auto center = sliderBounds.toFloat().getCentre();
@@ -165,11 +208,12 @@ void RotarySliderWithLabels::paint(juce::Graphics &g){
         
         auto pos =labels[i].pos;
         
-        jassert(0.f<=pos);
-        jassert(pos<=1.f);
+        jassert(0.f <= pos);
+        jassert(pos <= 1.f);
         
         auto ang = jmap(pos, 0.f, 1.f, startAng, endAng);  // mapeo de los min y max de los sliders...
-        auto c = center.getPointOnCircumference(radius + getTextHeight()*0.5 + 1, ang); // fijar un punto para dibujar el texto.
+        
+        auto c = center.getPointOnCircumference(radius + getTextHeight() * 0.5 + 1, ang); // fijar un punto para dibujar el texto.
         
         Rectangle<float> r;
         auto str = labels[i].label;
@@ -178,12 +222,14 @@ void RotarySliderWithLabels::paint(juce::Graphics &g){
         r.setY(r.getY() + getTextHeight());
         
         g.drawFittedText(str, r.toNearestInt(), juce::Justification::centred, 1);
-        //Inicializar los labels desde el constructor
+        
+        // Recuerda que hay que inicializar los labels desde el constructor.
         
     }
     
 }
 
+//Obtener los bordes de los sliders para colocarlos.
 juce::Rectangle<int> RotarySliderWithLabels::getSliderBounds()const
 {
     
@@ -191,10 +237,9 @@ juce::Rectangle<int> RotarySliderWithLabels::getSliderBounds()const
     
     auto size = juce::jmin(bounds.getWidth(),bounds.getHeight());
     
-    size -= getTextHeight()*2;
+    size -= getTextHeight() * 2;
     
     juce::Rectangle<int> r;
-    
     r.setSize(size,size);
     r.setCentre(bounds.getCentreX(), 0);
     r.setY(2);
@@ -205,15 +250,15 @@ juce::Rectangle<int> RotarySliderWithLabels::getSliderBounds()const
 
 
 
-// Implement the string ======================================
-juce::String RotarySliderWithLabels::getDisplayString() const {
+// Implement the string
+juce::String RotarySliderWithLabels::getDisplayString() const
+{
     
 // Condition to display choices if a the parameter is a choice based parameter....
     if (auto* choiceParam = dynamic_cast<juce::AudioParameterChoice*>(param))
         return choiceParam ->getCurrentChoiceName();
         
 // Here we display the units for the parameter values...
-    
     
     juce::String str;
     bool addK = false; // for adding the k prefix to the Hz
@@ -230,17 +275,17 @@ juce::String RotarySliderWithLabels::getDisplayString() const {
         
         // Values to strings
         
-        str = juce::String(val, (addK ? 2:0)); // Number of decimal places, if the value is below 1000, there are no decimal places (0).
+        // Number of decimal places, if the value is below 1000, there are no decimal places (0).
+        str = juce::String(val, (addK ? 2:0));
     }
-    
+
     else
     {
         jassertfalse; //This shouldnt happen.
     }
     
-    
-    if (suffix.isNotEmpty()){
-        
+    if (suffix.isNotEmpty())
+    {
         str<<" ";
         if(addK){
             str<<"k";
@@ -252,33 +297,24 @@ juce::String RotarySliderWithLabels::getDisplayString() const {
     
 }
 
-
-
-
-
-//==============================================================================
-//ResponseCurveComponent
+//================================================================================
+//==========================ResponseCurveComponent================================
+//================================================================================
 
 ResponseCurveComponent::ResponseCurveComponent(EelEQAudioProcessor& p):
 audioProcessor(p),
 leftPathProducer(audioProcessor.leftChannelFifo),
 rightPathProducer(audioProcessor.rightChannelFifo)
-
 {
-    
-    // Add listeer
-    
+    // Add listener
     const auto& params = audioProcessor.getParameters();
-    for(auto param: params){
+    
+    for(auto param: params)
+    {
         param->addListener(this);
     }
     
-    // Get the order of the FFT and set the monoBuffer size...
-    
-   
-    
     //Paint the current parameters.
-    
     UpdateChain();
     
     // start the timer (very importante)
@@ -286,54 +322,27 @@ rightPathProducer(audioProcessor.rightChannelFifo)
     
 }
 
+
 ResponseCurveComponent::~ResponseCurveComponent()
 {
-    
     //Remove listener on exit...
     const auto& params = audioProcessor.getParameters();
-    for(auto param: params){
+    for(auto param: params)
+    {
         param->removeListener(this);
     }
 }
 
-void ResponseCurveComponent::UpdateChain(){
-    
-    
-    auto chainSettings = getChainSettings(audioProcessor.apvts);
-    
-    monoChain.setBypassed<ChainPositions::LowCut>(chainSettings.lowCutBypassed);
-    monoChain.setBypassed<ChainPositions::HighCut>(chainSettings.highCutBypassed);
-    monoChain.setBypassed<ChainPositions::Peak>(chainSettings.peakBypassed);
-    
-    auto peakCoefficients = makePeakFilter(chainSettings, audioProcessor.getSampleRate());
-    UpdateCoefficients(monoChain.get<ChainPositions::Peak>().coefficients, peakCoefficients);
-    
-    auto lowcutCoefficients = makeLowCutFilter(chainSettings, audioProcessor.getSampleRate());
-    auto highcutCoefficients = makeHighCutFilter(chainSettings, audioProcessor.getSampleRate());
-    
-    UpdateCutFilter(monoChain.get<ChainPositions::LowCut>(), lowcutCoefficients, chainSettings.lowCutSlope);
-    UpdateCutFilter(monoChain.get<ChainPositions::HighCut>(), highcutCoefficients, chainSettings.highCutSlope);
-    
-    
-}
-
-
-
-void ResponseCurveComponent::paint (juce::Graphics& g)
+//========================================================================
+void ResponseCurveComponent::updateResponseCurve()
 {
-    
     using namespace juce;
-    // (Our component is opaque, so we must completely fill the background with a solid colour)
-    g.fillAll (Colours::black);
-    
-    g.drawImage(background, getBounds().toFloat());
     
     //Drawing the response curve...
     
     //We need to get the bounds and the width of the response area.
     
-//    auto responseArea = getLocalBounds();
-    auto responseArea = getAnalysisArea(); //getRenderArea();
+    auto responseArea = getAnalysisArea();
     
     auto w = responseArea.getWidth();
     
@@ -343,24 +352,25 @@ void ResponseCurveComponent::paint (juce::Graphics& g)
     
     
     auto sampleRate = audioProcessor.getSampleRate();
+    
     std::vector<double> mags;
+    
     mags.resize(w);
     
-    for(int i = 0; i<w; ++i){
-        
+    for(int i = 0; i<w; ++i)
+    {
         double mag = 1.f;
+       
         //mapping the frequency to human hearing range.
-        
-        auto freq = mapToLog10<double>(double(i)/double(w), 20, 20000);
+        auto freq = mapToLog10(double(i)/double(w), 20.0, 20000.0);
         
         //peak
-        if(! monoChain.isBypassed<ChainPositions::Peak>())
-        {
+        if( !monoChain.isBypassed<ChainPositions::Peak>() )
             mag *= peak.coefficients->getMagnitudeForFrequency(freq, sampleRate);
-        }
+        
         
         //lowcuts
-        if(!monoChain.isBypassed<ChainPositions::LowCut>())
+        if( !monoChain.isBypassed<ChainPositions::LowCut>() )
         {
             if (!lowcut.isBypassed<0>()){
                 mag *= lowcut.get<0>().coefficients->getMagnitudeForFrequency(freq, sampleRate);
@@ -377,7 +387,7 @@ void ResponseCurveComponent::paint (juce::Graphics& g)
         }
         
         //highcut
-        if(!monoChain.isBypassed<ChainPositions::HighCut>())
+        if( !monoChain.isBypassed<ChainPositions::HighCut>() )
         {
             if (!highcut.isBypassed<0>()){
                 mag *= highcut.get<0>().coefficients->getMagnitudeForFrequency(freq, sampleRate);
@@ -393,13 +403,12 @@ void ResponseCurveComponent::paint (juce::Graphics& g)
             }
         }
         
-        
         mags[i] = Decibels::gainToDecibels(mag);
         
     }
     
-    Path responseCurve;
-
+    responseCurve.clear();
+    
     const double outputMin = responseArea.getBottom();
     const double outputMax = responseArea.getY();
     auto map = [outputMin, outputMax](double input)
@@ -416,7 +425,24 @@ void ResponseCurveComponent::paint (juce::Graphics& g)
         responseCurve.lineTo(responseArea.getX() + i, map(mags[i]));
     }
     
-    //Drawing the FFT
+    
+}
+
+//========================================================================
+
+void ResponseCurveComponent::paint (juce::Graphics& g)
+{
+    
+    using namespace juce;
+    // (Our component is opaque, so we must completely fill the background with a solid colour)
+    g.fillAll (Colours::black);
+    
+    drawBackgroundGrid(g);
+   
+    //Drawing the FFT....
+    
+    
+    auto responseArea = getAnalysisArea();
     
     //Center the FFT to the ResponseArea...
     
@@ -433,180 +459,212 @@ void ResponseCurveComponent::paint (juce::Graphics& g)
     g.strokePath(rightChannelFFTPath, PathStrokeType(1.f));
     
     
-    
-    
-    // Drawing the Response curve
-    g.setColour(Colours::orange);
-    g.drawRoundedRectangle(getRenderArea().toFloat(), 4.f, 1.f);
-    
-    // Drawing the path
+    //Drawing the Response Curve Path
     g.setColour(Colours::white);
     g.strokePath(responseCurve, PathStrokeType(2.f));
     
+    //Border
+    Path border;
+    
+    border.setUsingNonZeroWinding(false);
+    
+    border.addRoundedRectangle(getRenderArea(),4);
+    border.addRectangle(getLocalBounds());
+    
+    g.setColour(Colours::black);
+    g.fillPath(border);
+    
+    
+    //Text Labels aux funtion...
+    drawTextLabels(g);
+    
+    //Orange Rectangle...
+    g.setColour(Colours::orange);
+    g.drawRoundedRectangle(getRenderArea().toFloat(), 4.f, 1.f);
     
 }
 
-void ResponseCurveComponent::resized(){
+std::vector<float> ResponseCurveComponent::getFrequencies()
+{
     
-    // PreRender the Frequency plot...
-    
-    using namespace juce;
-    background = Image(Image::PixelFormat::RGB, getWidth(), getHeight(), true);
-    
-    // Creación del contexto...
-    Graphics g(background);
-    
-    Array<float> freqs {
-        
+    return std::vector<float>
+    {
         20,50,100,
         200,500,1000,
         2000,5000,10000,
         20000
         
     };
-    
-    Array<float> gain {
-        
-        24.f, 12.f,0.f,
-        -12.f,-24.f
+}
+
+std::vector<float> ResponseCurveComponent::getGains()
+{
+    return std::vector<float>
+    {
+        24.f, 12.f, 0.f, -12.f, -24.f
         
     };
+}
+
+std::vector<float> ResponseCurveComponent::getXs(const std::vector<float> &freqs, float left, float width)
+{
+    std::vector<float> xs;
     
-    // Dibujamos las frecuencias (mapFromLog y drawVerticalLine)
-    // Catch the Analysis Area
+    for (auto f : freqs)
+    {
+        auto normX = juce::mapFromLog10(f, 20.f, 20000.f);
+        xs.push_back(left + width * normX);
+        
+    }
+    return xs;
+    
+}
+
+void ResponseCurveComponent::drawBackgroundGrid(juce::Graphics &g)
+{
+    using namespace juce;
+    
+    auto freqs = getFrequencies();
     
     auto renderArea = getAnalysisArea();
     auto left = renderArea.getX();
     auto right = renderArea.getRight();
     auto top = renderArea.getY();
     auto bottom = renderArea.getBottom();
-    auto width =renderArea.getWidth();
+    auto width = renderArea.getWidth();
     
-    Array<float> xs;
-    for (auto f: freqs){
-        auto normX = mapFromLog10(f, 20.f, 20000.f);
-        xs.add(left + width*normX);
-    }
+    auto xs = getXs(freqs, left, width);  // Normalizamos los valores de X
     
     g.setColour(Colours::dimgrey);
-    for (auto x: xs)
-    { g.drawVerticalLine(x, left, right);}
-
-    // Dibujamos la ganancia
     
-    for (auto gdB: gain)
+    for (auto x : xs)
     {
-        auto y = jmap(gdB, -24.f, 24.f, float(bottom), float(top));
-        g.setColour(gdB == 0.f ? Colours::green : Colours::dimgrey); // Si es 0dB se pinta de verde..
-        g.drawHorizontalLine(y, left, right);
+        g.drawVerticalLine(x, top, bottom); // Dibujamos las Frecuencias en X.
+        
     }
     
-//    Dibujamos los labels...
+    auto gain = getGains();
+    
+    for( auto gdB : gain)
+    {
+        auto y = jmap(gdB, -24.f, 24.f, float(bottom), float(top));
+        
+        g.setColour(gdB == 0.f ? Colours::darkgreen : Colours::dimgrey);
+        g.drawHorizontalLine(y, left, right); //Dibujamos las lineas de ganancia en Y.
+        
+    }
+    
+}
+
+void ResponseCurveComponent::drawTextLabels(juce::Graphics &g)
+{
+    using namespace juce;
+//  Dibujamos los labels...
+//  Seleccionamos un color y un tamaño de letra...
     
     g.setColour(Colours::lightgrey);
     const int fontHeight = 10;
     g.setFont(fontHeight);
     
-    for (int i = 0; i < freqs.size(); ++i){
-        
-        auto f = freqs[i];
-        auto x = xs[i];
-        
-        bool addK = false;
-        String str;
-        if(f>999.f){
-            addK = true;
-            f /= 1000.f;
-        }
-        
-        
-        str << f;
-        if(addK){
+// Sacamos las constantes...
+    
+    auto renderArea = getAnalysisArea();
+    auto left = renderArea.getX();
+    auto top = renderArea.getY();
+    auto bottom = renderArea.getBottom();
+    auto width = renderArea.getWidth();
+    
+    auto freqs = getFrequencies();
+    auto xs = getXs(freqs, left, width);
+    
+    for (int i = 0; i < freqs.size(); ++i)
+        {
+            auto f = freqs[i];
+            auto x = xs[i];
             
-            str << "k";
+            bool addK = false;
+            String str;
+            if( f > 999.f )
+            {
+                addK = true;
+                f /= 1000.f;
+            }
+            
+            
+            str << f;
+            
+            if( addK )
+            {
+                str << "k";
+            }
+            
+            str << "Hz";
+            
+            auto textWidth = g.getCurrentFont().getStringWidth(str);
+            
+            Rectangle<int> r;
+            r.setSize(textWidth, fontHeight);
+            r.setCentre(x, 0);
+            r.setY(1);
+            
+            g.drawFittedText(str,r,juce::Justification::centred, 1);
+        
         }
-        str << "Hz";
         
-        auto textWidth = g.getCurrentFont().getStringWidth(str);
-        
-        Rectangle<int> r;
-        
-        r.setSize(textWidth, fontHeight);
-        r.setCentre(x, 0);
-        r.setY(1);
-        
-        g.drawFittedText(str,r,juce::Justification::centred, 1);
+    auto gain = getGains();
     
-    }
-    
-    
-    for (auto gdB : gain){
-        
-        //Coordenadas de mapeo para las labels de ganacia..
-        auto y = jmap(gdB, -24.f, 24.f, float(bottom),float(top));
-        
-        String str;
-        if( gdB> 0)
-            str << "+";
-        str << gdB;
-        
-        auto textWidth = g.getCurrentFont().getStringWidth(str);
-        
-        //textbox para la ganancia del EQ
-        Rectangle<int> r;
-        r.setSize(textWidth, fontHeight);
-        r.setX(getWidth()-textWidth);
-        r.setCentre(r.getCentreX(), y);
-        
-        g.setColour(gdB == 0 ? Colours::darkgreen : Colours::lightgrey);
-        
-        g.drawFittedText(str,r, juce::Justification::centred, 1);
-        
-        
-        //textbox para el analizador de frecuencia
-        str.clear();
-        str << (gdB -24.f);
-        
-        //Actualizamos el tamaño del str a mostrar
-        textWidth = g.getCurrentFont().getStringWidth(str);
-        
-        r.setSize(textWidth, fontHeight);
-        r.setX(1);
-        
-        //Actualizamos los colores
-        g.setColour(Colours::lightgrey);
-        g.drawFittedText(str, r, juce::Justification::centred, 1);
-        
-    }
+    for (auto gdB : gain)
+    {
+            //Coordenadas de mapeo para las labels de ganacia..
+            auto y = jmap(gdB, -24.f, 24.f, float(bottom),float(top));
+            
+            String str;
+            if( gdB> 0)
+                str << "+";
+            str << gdB;
+            
+            auto textWidth = g.getCurrentFont().getStringWidth(str);
+            
+            //textbox para la ganancia del EQ
+            Rectangle<int> r;
+            r.setSize(textWidth, fontHeight);
+            r.setX(getWidth() - textWidth);
+            r.setCentre(r.getCentreX(), y);
+            
+            g.setColour(gdB == 0 ? Colours::darkgreen : Colours::lightgrey);
+            
+            g.drawFittedText(str,r, juce::Justification::centred, 1);
+            
+            //textbox para el analizador de frecuencia
+            str.clear();
+            str << (gdB -24.f);
+            
+            //Actualizamos el tamaño del str a mostrar
+            textWidth = g.getCurrentFont().getStringWidth(str);
+            
+            r.setSize(textWidth, fontHeight);
+            r.setX(1);
+            
+            //Actualizamos los colores
+            g.setColour(Colours::lightgrey);
+            g.drawFittedText(str, r, juce::Justification::centred, 1);
+            
+        }
     
 }
 
-juce::Rectangle <int> ResponseCurveComponent::getRenderArea(){
+void ResponseCurveComponent::resized()
+{
+    using namespace juce;
     
+    responseCurve.preallocateSpace(getWidth() * 3);
     
-    auto bounds = getLocalBounds();
-    
-    bounds.removeFromTop(10);
-    bounds.removeFromBottom(2);
-    bounds.removeFromLeft(20);
-    bounds.removeFromRight(20);
-    
-    
-    return bounds;
+    updateResponseCurve();
+
 }
 
-juce::Rectangle<int> ResponseCurveComponent::getAnalysisArea(){
-    
-    auto bounds = getRenderArea();
-    
-    bounds.removeFromTop(4);
-    bounds.removeFromBottom(4);
-    
-    return bounds;
-    
-}
-
-void ResponseCurveComponent::parameterValueChanged(int parameterIndex, float newValue){
+void ResponseCurveComponent::parameterValueChanged(int parameterIndex, float newValue)
+{
     
     // Set the atomic flag
     parametersChanged.set(true);
@@ -641,16 +699,13 @@ void PathProducer::process(juce::Rectangle<float> fftBounds, double sampleRate)
         }
     }
     
-    //If there are FFT data buffers to pull
-    //If we can pull a buffer,  genereate a path...
     
     auto fftSize = leftChannelFFTDataGenerator.getFFTSize();
     
-    const auto binWidth = sampleRate / (double)fftSize;
+    const auto binWidth = sampleRate / double(fftSize);
     
     while (leftChannelFFTDataGenerator.getNumAvailableFFTDataBlocks() > 0)
     {
-        
         std::vector<float> fftData;
         if(leftChannelFFTDataGenerator.getFFTData(fftData))
         {
@@ -660,7 +715,7 @@ void PathProducer::process(juce::Rectangle<float> fftBounds, double sampleRate)
     
     //Actualizar los paths y utilizar los más recientes...
     
-    while (pathProducer.getNumPathsAvailable()>0)
+    while (pathProducer.getNumPathsAvailable() > 0)
     {
         pathProducer.getPath(leftChannelFFTPath);
     }
@@ -683,15 +738,60 @@ void ResponseCurveComponent::timerCallback()
         
         DBG("Params Change");
         UpdateChain();
-        // Redibujar la curva
-//        repaint();
+        updateResponseCurve();
         
     }
     
     repaint();
 }
 
-//==============================================================================
+void ResponseCurveComponent::UpdateChain()
+{
+    
+    auto chainSettings = getChainSettings(audioProcessor.apvts);
+    
+    monoChain.setBypassed<ChainPositions::LowCut>(chainSettings.lowCutBypassed);
+    monoChain.setBypassed<ChainPositions::HighCut>(chainSettings.highCutBypassed);
+    monoChain.setBypassed<ChainPositions::Peak>(chainSettings.peakBypassed);
+    
+    auto peakCoefficients = makePeakFilter(chainSettings, audioProcessor.getSampleRate());
+    UpdateCoefficients(monoChain.get<ChainPositions::Peak>().coefficients, peakCoefficients);
+    
+    auto lowcutCoefficients = makeLowCutFilter(chainSettings, audioProcessor.getSampleRate());
+    auto highcutCoefficients = makeHighCutFilter(chainSettings, audioProcessor.getSampleRate());
+    
+    UpdateCutFilter(monoChain.get<ChainPositions::LowCut>(), lowcutCoefficients, chainSettings.lowCutSlope);
+    UpdateCutFilter(monoChain.get<ChainPositions::HighCut>(), highcutCoefficients, chainSettings.highCutSlope);
+    
+    
+}
+
+juce::Rectangle <int> ResponseCurveComponent::getRenderArea()
+{
+    auto bounds = getLocalBounds();
+    
+    bounds.removeFromTop(12);
+    bounds.removeFromBottom(2);
+    bounds.removeFromLeft(20);
+    bounds.removeFromRight(20);
+
+    return bounds;
+}
+
+juce::Rectangle<int> ResponseCurveComponent::getAnalysisArea()
+{
+    auto bounds = getRenderArea();
+    bounds.removeFromTop(4);
+    bounds.removeFromBottom(4);
+    
+    return bounds;
+    
+}
+
+//================================================================================
+//==========================EelEQAudioProcessorEditor=============================
+//================================================================================
+
 EelEQAudioProcessorEditor::EelEQAudioProcessorEditor(EelEQAudioProcessor& p)
     : AudioProcessorEditor (&p), audioProcessor (p),
 
@@ -754,6 +854,7 @@ EelEQAudioProcessorEditor::EelEQAudioProcessorEditor(EelEQAudioProcessor& p)
     peakBypassButton.setLookAndFeel(&lnf);
     lowCutBypassButton.setLookAndFeel(&lnf);
     highCutBypassButton.setLookAndFeel(&lnf);
+    analyzerEnabledButton.setLookAndFeel(&lnf);
     
     setSize (600, 480);
 }
@@ -764,6 +865,7 @@ EelEQAudioProcessorEditor::~EelEQAudioProcessorEditor()
     peakBypassButton.setLookAndFeel(nullptr);
     lowCutBypassButton.setLookAndFeel(nullptr);
     highCutBypassButton.setLookAndFeel(nullptr);
+    analyzerEnabledButton.setLookAndFeel(nullptr);
     
     
 }
@@ -784,8 +886,20 @@ void EelEQAudioProcessorEditor::resized()
     // subcomponents in your editor..
     
     auto bounds = getLocalBounds();
-    float hRatio = 25.f/100.f; //JUCE_LIVE_CONSTANT(33)/100.f;
-    auto responseArea = bounds.removeFromTop(bounds.getHeight()*hRatio);
+    
+    //Creación del boton
+    auto analyzerEnabledArea = bounds.removeFromTop(25); //Area
+    analyzerEnabledArea.setWidth(100); //ancho
+    analyzerEnabledArea.setX(5); //donde empieza su eje x
+    analyzerEnabledArea.removeFromTop(5); //separar 5 pixeles de arriba.
+    
+    analyzerEnabledButton.setBounds(analyzerEnabledArea); //Renderizamos el boton...
+    
+    bounds.removeFromBottom(5); //Creamos espacio para todo lo demás...
+    
+    float hRatio = 25.f/100.f;
+    auto responseArea = bounds.removeFromTop(bounds.getHeight() * hRatio);
+    
     responseCurveComponent.setBounds(responseArea);
     
     bounds.removeFromTop(5);
