@@ -359,7 +359,32 @@ private:
 // Bypass buttons for Filters N the FFT Analyzer...
 
 struct PowerButton : juce::ToggleButton {};
-struct AnalyzerButton : juce::ToggleButton {};
+struct AnalyzerButton : juce::ToggleButton
+{
+    void resized() override
+    {
+        auto bounds = getLocalBounds();
+        auto insetRect = bounds.reduced(4);
+        
+        randomPath.clear();
+        
+        juce::Random r;
+        
+        //Crear los puntos
+        randomPath.startNewSubPath(insetRect.getX(),
+                                   insetRect.getY() + insetRect.getHeight() * r.nextFloat());
+        
+        //Unir puntos
+        for (auto x = insetRect.getX() + 1; x < insetRect.getRight(); x += 2 )
+        {
+            randomPath.lineTo(x,
+                              insetRect.getY() + insetRect.getHeight() * r.nextFloat());
+        }
+        
+    }
+      
+    juce::Path randomPath;
+};
 
 
 //==============================================================================
@@ -407,7 +432,7 @@ private:
     
     // Funcion Auxiliar para modificar los sliders
     
-    std::vector<juce::Component*> getComp();
+    std::vector<juce::Component*> getComps();
     
     
     //Botones de Bypass...

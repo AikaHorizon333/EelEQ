@@ -127,7 +127,7 @@ void LookAndFeel::drawToggleButton(juce::Graphics &g,
         g.drawEllipse(r, 2.f);
     }
     
-    else if (auto* ab = dynamic_cast<AnalyzerButton*>(&toggleButton))
+    else if (auto* analyzerButton = dynamic_cast<AnalyzerButton*>(&toggleButton))
     {
         
         //Queremos dibujar
@@ -138,24 +138,7 @@ void LookAndFeel::drawToggleButton(juce::Graphics &g,
         auto bounds = toggleButton.getLocalBounds();
         g.drawRect(bounds);
         
-        auto insetRect = bounds.reduced(4);
-        
-        Path randomPath;
-        
-        Random r;
-        
-        //Crear los puntos
-        randomPath.startNewSubPath(insetRect.getX(),
-                                   insetRect.getY() + insetRect.getHeight() * r.nextFloat());
-        
-        //Unir puntos
-        for (auto x = insetRect.getX() + 1; x < insetRect.getRight(); x += 2 )
-        {
-            randomPath.lineTo(x,
-                              insetRect.getY() + insetRect.getHeight() * r.nextFloat());
-        }
-        
-        g.strokePath(randomPath, PathStrokeType(1.f));
+        g.strokePath(analyzerButton->randomPath, PathStrokeType(1.f));
         
     }
 }
@@ -845,7 +828,7 @@ EelEQAudioProcessorEditor::EelEQAudioProcessorEditor(EelEQAudioProcessor& p)
     highcutSlopeSlider.labels.add({1.f,"48"});
     
     
-    for(auto* comp : getComp())
+    for(auto* comp : getComps())
     {
         addAndMakeVisible(comp);
     }
@@ -923,7 +906,7 @@ void EelEQAudioProcessorEditor::resized()
 }
 
 
-std::vector<juce::Component*> EelEQAudioProcessorEditor::getComp(){
+std::vector<juce::Component*> EelEQAudioProcessorEditor::getComps(){
     
     return
     {
