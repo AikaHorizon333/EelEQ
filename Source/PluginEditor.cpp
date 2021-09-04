@@ -430,20 +430,24 @@ void ResponseCurveComponent::paint (juce::Graphics& g)
     
     auto responseArea = getAnalysisArea();
     
-    //Center the FFT to the ResponseArea...
     
-    //LEFT
-    auto leftChannelFFTPath = leftPathProducer.getPath();
-    leftChannelFFTPath.applyTransform(AffineTransform().translation(responseArea.getX(), responseArea.getY()));
-    g.setColour(Colours::blue);
-    g.strokePath(leftChannelFFTPath, PathStrokeType(1.f));
     
-    //RIGHT
-    auto rightChannelFFTPath = rightPathProducer.getPath();
-    rightChannelFFTPath.applyTransform(AffineTransform().translation(responseArea.getX(), responseArea.getY()));
-    g.setColour(Colours::red);
-    g.strokePath(rightChannelFFTPath, PathStrokeType(1.f));
+    //Adding the Bypass condition
     
+    if(shouldShowFFTAnalysis)
+    {
+        //LEFT
+        auto leftChannelFFTPath = leftPathProducer.getPath();
+        leftChannelFFTPath.applyTransform(AffineTransform().translation(responseArea.getX(), responseArea.getY()));
+        g.setColour(Colours::blue);
+        g.strokePath(leftChannelFFTPath, PathStrokeType(1.f));
+        
+        //RIGHT
+        auto rightChannelFFTPath = rightPathProducer.getPath();
+        rightChannelFFTPath.applyTransform(AffineTransform().translation(responseArea.getX(), responseArea.getY()));
+        g.setColour(Colours::red);
+        g.strokePath(rightChannelFFTPath, PathStrokeType(1.f));
+    }
     
     //Drawing the Response Curve Path
     g.setColour(Colours::white);
@@ -711,11 +715,16 @@ void PathProducer::process(juce::Rectangle<float> fftBounds, double sampleRate)
 
 void ResponseCurveComponent::timerCallback()
 {
-    auto fftBounds = getAnalysisArea().toFloat();
-    auto sampleRate = audioProcessor.getSampleRate();
     
-    leftPathProducer.process(fftBounds, sampleRate);
-    rightPathProducer.process(fftBounds, sampleRate);
+    // Bypasseamos el proceso de la FFT aquí....
+    if(shouldShowFFTAnalysis)
+    {
+        auto fftBounds = getAnalysisArea().toFloat();
+        auto sampleRate = audioProcessor.getSampleRate();
+        
+        leftPathProducer.process(fftBounds, sampleRate);
+        rightPathProducer.process(fftBounds, sampleRate);
+    }
     
     // Solo va a actualizar si se realizó algun cambio en el parametro
     if(parametersChanged.compareAndSetBool(false, true))
@@ -889,6 +898,19 @@ EelEQAudioProcessorEditor::EelEQAudioProcessorEditor(EelEQAudioProcessor& p)
             comp->highcutSlopeSlider.setEnabled(!bypassed);
         }
     };
+    
+    analyzerEnabledButton.onClick = [safePtr]()
+    {
+        if (auto* comp = safePtr.getComponent())
+        {
+            auto enabled = comp->analyzerEnabledButton.getToggleState();
+            
+            comp->responseCurveComponent.toggleAnalysisEnablement(enabled);
+            
+            
+        }
+    };
+    
     
     
     

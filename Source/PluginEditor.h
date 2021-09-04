@@ -324,6 +324,14 @@ juce::Timer
     void paint (juce::Graphics& g) override;
     void resized()override;
     
+    //Bypass the analyser
+    
+    void toggleAnalysisEnablement(bool enabled)
+    {
+        shouldShowFFTAnalysis = enabled;
+        
+    }
+    
 private:
     
     EelEQAudioProcessor& audioProcessor;
@@ -353,6 +361,9 @@ private:
     
     //FFT
     PathProducer leftPathProducer, rightPathProducer;
+    
+    //FFT Bypass condition
+    bool shouldShowFFTAnalysis = true;
     
 };
 //==============================================================================
