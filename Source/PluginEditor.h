@@ -372,8 +372,11 @@ private:
     lowcutFreqSliderAttachment, highcutFreqSliderAttachment,
     lowcutSlopeSliderAttachment, highcutSlopeSliderAttachment;
     
+    juce::ToggleButton lowCutBypassButton, highCutBypassButton, peakBypassButton, analyzerEnabledButton;
     
+    using ButtonAttachment = APVTS::ButtonAttachment;
     
+    ButtonAttachment lowCutBypassButtonAttachment, highCutBypassButtonAttachment, peakButtonBypassAttachment, analyzerEnabledButtonAttachment;
     
     
     
