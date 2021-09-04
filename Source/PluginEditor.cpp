@@ -25,11 +25,14 @@ void LookAndFeel::drawRotarySlider(juce::Graphics& g,
     
     auto bounds = Rectangle<float>(x, y, width, height);
     
+    auto enabled = slider.isEnabled();
+    
     // This colors the button
-    g.setColour(Colour(97u,18u,167u));
+    g.setColour(enabled ? Colour(97u,18u,167u) : Colours::darkgrey);
     g.fillEllipse(bounds);
-    g.setColour(Colours::black);
-    g.drawEllipse(bounds,  1.f);
+    
+    g.setColour(enabled ? Colours::black : Colours::grey);
+    g.drawEllipse(bounds,  1.f); // borde del boton
     
     // Adding the parameter values to the GUI
     
@@ -838,6 +841,57 @@ EelEQAudioProcessorEditor::EelEQAudioProcessorEditor(EelEQAudioProcessor& p)
     lowCutBypassButton.setLookAndFeel(&lnf);
     highCutBypassButton.setLookAndFeel(&lnf);
     analyzerEnabledButton.setLookAndFeel(&lnf);
+    
+    
+    
+    // Desactivar Componentes...
+    
+    auto safePtr = juce::Component::SafePointer<EelEQAudioProcessorEditor>(this);
+    
+    
+    // Conectamos el safePtr al boton de bypass para poder meternos a sus componentes...
+    
+    peakBypassButton.onClick = [safePtr]()
+    {
+        if( auto* comp = safePtr.getComponent()) //Revisamos la existencia del componente...
+        {
+            auto bypassed = comp->peakBypassButton.getToggleState();
+            
+            comp->peakFreqSlider.setEnabled(!bypassed);
+            comp->peakGainSlider.setEnabled(!bypassed);
+            comp->peakQualitySlider.setEnabled(!bypassed);
+            
+            
+        }
+    };
+    
+    // Repetimos con los componentes que queramos desactivar...
+    lowCutBypassButton.onClick = [safePtr]()
+    {
+        if (auto* comp = safePtr.getComponent())
+        {
+            auto bypassed = comp->lowCutBypassButton.getToggleState();
+            
+            comp->lowcutFreqSlider.setEnabled(!bypassed);
+            comp->lowcutSlopeSlider.setEnabled(!bypassed);
+            
+        }
+        
+    };
+    
+    highCutBypassButton.onClick = [safePtr]()
+    {
+        if (auto* comp = safePtr.getComponent())
+        {
+            auto bypassed = comp->highCutBypassButton.getToggleState();
+            
+            comp->highcutFreqSlider.setEnabled(!bypassed);
+            comp->highcutSlopeSlider.setEnabled(!bypassed);
+        }
+    };
+    
+    
+    
     
     setSize (600, 480);
 }
