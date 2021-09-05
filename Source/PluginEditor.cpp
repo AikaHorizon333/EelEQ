@@ -29,10 +29,10 @@ void LookAndFeel::drawRotarySlider(juce::Graphics& g,
     
     // This colors the button
     g.setColour(enabled ? Colour(97u,18u,167u) : Colours::darkgrey);
-    g.fillEllipse(bounds);
+    g.fillEllipse(bounds);// Relleno del Boton
     
-    g.setColour(enabled ? Colours::black : Colours::grey);
-    g.drawEllipse(bounds,  1.f); // borde del boton
+    g.setColour(enabled ? Colours::lavender : Colours::grey);
+    g.drawEllipse(bounds, 1.5f); // borde del boton
     
     // Adding the parameter values to the GUI
     
@@ -43,11 +43,11 @@ void LookAndFeel::drawRotarySlider(juce::Graphics& g,
         
         Rectangle<float> r;
         r.setLeft(center.getX() - 5);
-        r.setRight(center.getX() + 5);
+        r.setRight(center.getX() + 5 );
         r.setTop(bounds.getY());
-        r.setBottom(center.getY() - rswl->getTextHeight() * 1.5); // addapt the bottom in relation to the text.
+        r.setBottom(center.getY() - rswl->getTextHeight() * 2.5); // addapt the bottom in relation to the text.
         
-        p.addRoundedRectangle(r, 2.f);
+        p.addRoundedRectangle(r, 1.f);
         
         //This gets the center to the pointer rectangle:
         
@@ -69,10 +69,10 @@ void LookAndFeel::drawRotarySlider(juce::Graphics& g,
         r.setSize(strWidth + 4, rswl->getTextHeight() + 2);
         r.setCentre(bounds.getCentre());
         
-        g.setColour(Colours::black);
+        g.setColour(enabled? Colours::black : Colours::darkgrey);
         g.fillRect(r);
         
-        g.setColour(Colours::white);
+        g.setColour(enabled ? Colours::white : Colours::lightgrey);
         g.drawFittedText(text, r.toNearestInt(), juce::Justification::centred, 1); // Esto pone el Texto en el rectangulo
     }
     
@@ -913,9 +913,9 @@ EelEQAudioProcessorEditor::EelEQAudioProcessorEditor(EelEQAudioProcessor& p)
     
     
     
+    // Modificamos el aspecto del plugin
     
-    
-    setSize (600, 480);
+    setSize (488, 600);
 }
 
 EelEQAudioProcessorEditor::~EelEQAudioProcessorEditor()
@@ -934,8 +934,94 @@ void EelEQAudioProcessorEditor::paint (juce::Graphics& g)
 {
     
     using namespace juce;
-    // (Our component is opaque, so we must completely fill the background with a solid colour)
+
+    //Vamos a pintar el plugin:
+    
     g.fillAll (Colours::black);
+
+    Path curve;
+
+    auto bounds = getLocalBounds(); //Limites del Plugin
+    auto center = bounds.getCentre(); // Coordenadas del centro
+
+    // Creamos un titulo para el Header del plugin...
+    String title {"EEL 01 EQ"};
+
+    // Dibujamos el titulo...
+    g.setFont (Font ("Arial Black", 25, Font::plain));
+    
+    
+    // dibujamos el Header...
+    auto titleWidth = g.getCurrentFont().getStringWidth(title);
+        
+    curve.startNewSubPath(center.x, 32);
+    curve.lineTo(center.x - titleWidth * 0.45, //0.45
+                 32);
+    
+    auto cornerSize = 40;
+    auto curvePos = curve.getCurrentPosition();
+    
+    curve.quadraticTo(curvePos.getX() - cornerSize, curvePos.getY(),
+                          curvePos.getX() - cornerSize, curvePos.getY() - 16);
+    
+    curvePos = curve.getCurrentPosition();
+    
+    
+    curve.quadraticTo(curvePos.getX(), 2,
+                        curvePos.getX() - cornerSize, 2);
+        
+    curve.lineTo({0.f, //0.f
+                2.f}); //2.f
+    
+    curve.lineTo(0.f,   //0.f
+                 0.f);  //0.f
+    
+    curve.lineTo(center.x, 0.f); //0.f
+    curve.closeSubPath();
+        
+    g.setColour(Colour(97u, 18u, 167u));
+    g.fillPath(curve);
+        
+    curve.applyTransform(AffineTransform().scaled(-1, 1));
+    curve.applyTransform(AffineTransform().translated(getWidth(), 0));
+    g.fillPath(curve);
+
+    //Ponemos El titulo
+    g.setColour(Colours::orange);
+    g.drawFittedText(title, bounds, juce::Justification::centredTop, 1);
+    
+    
+    
+    
+    
+    
+    
+    //Nombre de los parametros...
+    g.setColour(Colours::lightgrey);
+    g.setFont(16);
+    g.drawFittedText("LowCut", lowcutSlopeSlider.getBounds(), juce::Justification::centredBottom, 1);
+    g.drawFittedText("Peak", peakQualitySlider.getBounds(), juce::Justification::centredBottom, 1);
+    g.drawFittedText("HighCut", highcutSlopeSlider.getBounds(), juce::Justification::centredBottom, 1);
+        
+    //Fecha de Compilado..
+    
+    auto buildDate = Time::getCompilationDate().toString(true, false);
+    auto buildTime = Time::getCompilationDate().toString(false, true);
+    
+    g.setFont(Font("Arial", 7, Font::italic));
+    g.drawFittedText("Build: " + buildDate + "\n" + buildTime,
+                     highcutSlopeSlider.getBounds().withY(6),
+                     Justification::topRight,
+                     2);
+
+    
+    
+    
+    
+    
+    
+    
+    
 
 }
 
